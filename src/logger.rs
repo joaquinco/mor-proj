@@ -8,6 +8,18 @@ pub mod level {
 pub static mut LOG_LEVEL: i32 = level::INFO;
 
 #[allow(dead_code)]
+pub fn set_level(level: &str) {
+  unsafe {
+    LOG_LEVEL = match level.to_string().to_lowercase().as_ref() {
+      "debug" => { level::DEBUG }
+      "info" => { level::INFO }
+      "error" => { level::ERROR }
+      _ => LOG_LEVEL
+    }
+  }
+}
+
+#[allow(dead_code)]
 pub fn debug(message: &str) {
   log(message, level::DEBUG);
 }

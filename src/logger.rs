@@ -20,21 +20,21 @@ pub fn set_level(level: &str) {
 }
 
 #[allow(dead_code)]
-pub fn debug(message: &str) {
+pub fn debug(message: String) {
   log(message, level::DEBUG);
 }
 
 #[allow(dead_code)]
-pub fn info(message: &str) {
+pub fn info(message: String) {
   log(message, level::INFO);
 }
 
 #[allow(dead_code)]
-pub fn error(message: &str) {
+pub fn error(message: String) {
   log(message, level::ERROR);
 }
 
-fn log(message: &str, level: i32) {
+fn log(message: String, level: i32) {
   unsafe {
     if LOG_LEVEL > level {
       return;
@@ -42,4 +42,25 @@ fn log(message: &str, level: i32) {
   }
 
   println!("{}", message);
+}
+
+#[macro_export]
+macro_rules! debug {
+  ($($arg:tt)*) => {
+    crate::logger::debug(format!($($arg)*))
+  }
+}
+
+#[macro_export]
+macro_rules! info {
+  ($($arg:tt)*) => {
+    crate::logger::info(format!($($arg)*))
+  }
+}
+
+#[macro_export]
+macro_rules! error {
+  ($($arg:tt)*) => {
+    crate::logger::error(format!($($arg)*))
+  }
 }

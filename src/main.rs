@@ -54,10 +54,8 @@ fn main() {
 
   let config = match parse_config(config_file) {
     Ok(config) => config,
-    Err(e) => panic!(format!("Error reading config file {}", e)),
+    Err(e) => panic!("Error reading config file {}", e),
   };
-
-  debug!("Max iter set to {}", config.iters);
 
   mh::run(config);
 }

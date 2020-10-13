@@ -1,11 +1,7 @@
-use crate::config::Config;
-use crate::types::Solution;
-
+use crate::types::{Config, Solution};
 
 pub fn run(config: Config) -> Solution {
   info!("Using configuration:\n{}", config);
-
-  config.instance.validate().unwrap();
 
   let mut iteration = 1;
 

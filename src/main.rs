@@ -6,12 +6,11 @@ use std::fs::File;
 use std::io::BufReader;
 use clap::{Arg, App, ArgMatches};
 
-mod config;
 #[macro_use] mod logger;
 mod types;
 mod mh;
 
-use config::Config;
+use crate::types::Config;
 
 static APP_NAME: &str = "mor-proj";
 
@@ -57,5 +56,6 @@ fn main() {
     Err(e) => panic!("Error reading config file {}", e),
   };
 
+  config.instance.validate().unwrap();
   mh::run(config);
 }

@@ -12,8 +12,12 @@ pub struct Solution {
 
 impl fmt::Display for Solution {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let value = self.value.unwrap_or(-1.0);
-    write!(f, "<Solution value={} routes={}>", value, self.routes.len())
+    let value_str = match self.value {
+      Some(val) => format!("{}", val),
+      None => "Unset".to_string()
+    };
+
+    write!(f, "<Solution value={} routes={}>", value_str, self.routes.len())
   }
 }
 

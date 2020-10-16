@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use super::others::{Node, Truck, TruckDefinition, Client};
+use super::{Node, Vehicle, VehicleDefinition, Client, Solution};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ProblemInstance {
@@ -11,10 +11,12 @@ pub struct ProblemInstance {
   pub allowed_deviation: f64,
   pub nodes: Vec<Node>,
   pub distances:  Vec<Vec<f64>>,
-  pub truck_definitions: Vec<TruckDefinition>,
+  pub vehicle_definitions: Vec<VehicleDefinition>,
   #[serde(skip)]
-  pub trucks: Option<Vec<Truck>>,
+  pub vehicles: Vec<Vehicle>,
   pub clients: Vec<Client>,
+  #[serde(skip)]
+  inited: bool,
 }
 
 impl Default for ProblemInstance {
@@ -25,14 +27,39 @@ impl Default for ProblemInstance {
       allowed_deviation: 0.0,
       nodes: vec![],
       distances: vec![],
-      truck_definitions: vec![],
-      trucks: None,
-      clients: vec![]
+      vehicle_definitions: vec![],
+      vehicles: vec![],
+      clients: vec![],
+      inited: false,
     }
   }
 }
 
 impl ProblemInstance {
+  pub fn init(&mut self) {
+    if self.inited {
+      return
+    }
+
+    self.init_vehicles();
+
+    self.inited = true;
+  }
+
+  fn init_vehicles(&mut self) {
+    let mut max: i32 = 1000;
+
+    let vehicles: Vec<Vehicle> = self.vehicle_definitions.iter().flat_map(|vehicle_def| {
+      let min = max;
+      max = max + vehicle_def.count;
+      (min..max).map(move |id| {
+        Vehicle { id: id, capacity: vehicle_def.capacity }
+      })
+    }).collect();
+
+    self.vehicles = vehicles;
+  }
+
   pub fn validate(&self) -> Result<(), String> {
     let node_count = self.nodes.len();
 
@@ -42,24 +69,18 @@ impl ProblemInstance {
       }
     }
 
-    Ok(())
-  }
-
-  pub fn trucks(&mut self) -> &Vec<Truck> {
-    if self.trucks.is_none() {
-      let mut max: i32 = 1000;
-
-      let trucks: Vec<Truck> = self.truck_definitions.iter().flat_map(|truck_def| {
-        let min = max;
-        max = max + truck_def.count;
-        (min..max).map(move |id| {
-          Truck { id: id, capacity: truck_def.capacity }
-        })
-      }).collect();
-
-      self.trucks = Some(trucks);
+    if self.vehicles.len() == 0 {
+      return Err("You must specify at least one vehicle".to_string());
     }
 
-    self.trucks.as_ref().unwrap()
+    if self.clients.len() == 0 {
+      return Err("You must specify some clients".to_string());
+    }
+
+    Ok(())
+  }
+  
+  pub fn evaluate_sol(&self, sol: &mut Solution) {
+    sol.value = sol.routes.iter().map(|route| route.cost).sum();
   }
 }

@@ -9,7 +9,8 @@ use clap::{Arg, App, ArgMatches};
 #[macro_use] mod logger;
 mod utils;
 mod types;
-mod mh;
+mod metaheuristics;
+mod runner;
 
 use crate::types::Config;
 
@@ -52,11 +53,12 @@ fn main() {
 
   let config_file = args.value_of("config_file").unwrap();
 
-  let config = match parse_config(config_file) {
+  let mut config = match parse_config(config_file) {
     Ok(config) => config,
     Err(e) => panic!("Error reading config file {}", e),
   };
 
+  config.instance.init();
   config.instance.validate().unwrap();
-  mh::run(config);
+  runner::run(config);
 }

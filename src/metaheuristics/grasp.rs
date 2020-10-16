@@ -1,26 +1,29 @@
+use serde::{Serialize, Deserialize};
+
 use crate::types::{Solution, Config};
 
-pub struct Grasp {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GraspConfig {
   pub time_weight: f64,
-  pub demand_weight: f64,
-  pub max_iter: i32,
+  demand_weight: f64,
+  prioritize_larger_vehicles: bool,
 }
 
-impl Default for Grasp {
-  fn default() -> Grasp {
-    Grasp {
+impl Default for GraspConfig {
+  fn default() -> GraspConfig {
+    GraspConfig {
       time_weight: 0.5,
       demand_weight: 0.5,
-      max_iter: 20,
+      prioritize_larger_vehicles: false,
     }
   }
 }
 
+pub struct Grasp {
+  pub config: GraspConfig,
+}
+
 impl Grasp {
-  pub fn init(&self, conf: Config) {
-
-  }
-
   fn build_solution(&self) -> Solution {
     Default::default()
   }

@@ -6,8 +6,8 @@ pub fn run(config: Config) -> Solution {
 
   let mut iteration = config.iters;
   let mut best: Option<Solution> = None;
-  let mh: Grasp = Default::default();
-  
+  let mh: Grasp = Grasp { config: config.grasp_config };
+
   while iteration != 0 {
     let mut sol = mh.iterate();
 

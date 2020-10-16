@@ -1,6 +1,8 @@
 use std::fmt;
 use serde::{Serialize, Deserialize};
 
+use crate::metaheuristics::GraspConfig;
+
 use super::problem_instance::ProblemInstance;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -10,6 +12,8 @@ pub struct Config {
   #[serde(default)]
   pub instance_name: String,
   pub instance: ProblemInstance,
+  #[serde(default)]
+  pub grasp_config: GraspConfig,
 }
 
 impl Default for Config {
@@ -18,6 +22,7 @@ impl Default for Config {
       iters: 10,
       instance_name: String::from("Some instance"),
       instance: Default::default(),
+      grasp_config: Default::default(),
     }
   }
 }

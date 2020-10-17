@@ -1,16 +1,18 @@
-use std::cmp;
+use std::{cmp, collections::HashSet};
 
 use rand;
 use rand::seq::SliceRandom;
 use serde::{Serialize, Deserialize};
 
-use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry, Time, Cost};
+use crate::utils::remove_from_vec;
+use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry, Client, Time, Cost};
 
 #[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GraspConfig {
   time_weight: f64,
   demand_weight: f64,
+  distance_weight: f64,
   prioritize_larger_vehicles: bool,
   rcl_size: usize,
 }
@@ -18,8 +20,9 @@ pub struct GraspConfig {
 impl Default for GraspConfig {
   fn default() -> GraspConfig {
     GraspConfig {
-      time_weight: 0.5,
-      demand_weight: 0.5,
+      time_weight: 0.3,
+      demand_weight: 0.3,
+      distance_weight: 0.3,
       prioritize_larger_vehicles: false,
       rcl_size: 5,
     }
@@ -30,20 +33,11 @@ pub struct Grasp {
   pub config: GraspConfig,
 }
 
-fn remove_from_list(list: &mut Vec<usize>, elem: &usize) {
-  match list.binary_search(elem) {
-    Ok(index) => { list.remove(index); },
-    _ => {}
-  };
-}
-
 impl Grasp {
   fn build_solution(&self, problem: &ProblemInstance) -> Result<Solution, String> {
     let mut vehicles = self.get_sorted_vehicles(&problem.vehicles);
-    let mut all_clients: Vec<usize> = (0..problem.clients.len()).collect();
-    all_clients = all_clients
-      .iter()
-      .filter(|index| **index != problem.source)
+    let mut all_clients: HashSet<usize> = (0..problem.clients.len())
+      .filter(|index| *index != problem.source)
       .map(|index| index.to_owned())
       .collect();
 
@@ -57,16 +51,16 @@ impl Grasp {
         Some(value) => selected_vehicle_id = value.to_owned(),
       };
 
-      remove_from_list(&mut vehicles, &selected_vehicle_id);
+      remove_from_vec(&mut vehicles, &selected_vehicle_id);
       let selected_vehicle = &problem.vehicles[selected_vehicle_id];
 
       let mut capacity_left = selected_vehicle.capacity;
       let mut route_distance = 0 as Time;
-      let mut route: Vec<usize> = vec![];
+      let mut route: Vec<usize> = vec![problem.source];
       let mut current_node = problem.source;
       let mut current_time = problem.clients[problem.source].earliest;
 
-      while capacity_left > 0.0 && !all_clients.is_empty()  {
+      while capacity_left > 0.0 && !all_clients.is_empty() {
         let current_clients: Vec<usize> = self.get_sorted_clients(
           capacity_left,
           current_time,
@@ -79,10 +73,11 @@ impl Grasp {
         
         /* Choose a client */
         match self.rcl_choose(&current_clients) {
-          None => return Err("No clients could be chosen".to_string()),
+          /* No feasible clients to chose */
+          None => break,
           Some(value) => selected_client_id = value.to_owned(),
         };
-        remove_from_list(&mut all_clients, &selected_client_id);
+        all_clients.remove(&selected_client_id);
         let selected_client = &problem.clients[selected_client_id];
 
         /* Update route costs */
@@ -95,24 +90,22 @@ impl Grasp {
         current_node = selected_client_id;
       }
 
-      if !route.is_empty() {
-        /* Add costs for going back to source */
-        route.push(problem.source.to_owned());
-        route_distance += problem.distances[current_node][problem.source];
-        /* TODO: we assume here that the source.latest time is big enough to
-          so we don't verify if time of arrival is lower.
+      /* Add costs for going back to source */
+      route.push(problem.source.to_owned());
+      route_distance += problem.distances[current_node][problem.source];
+      /* TODO: we assume here that the source.latest time is big enough,
+        * so we don't verify if time of arrival is lower than source latest.
         */
 
-        let route_cost = selected_vehicle.fixed_cost + route_distance as Cost * selected_vehicle.variable_cost;
+      let route_cost = selected_vehicle.fixed_cost + route_distance as Cost * selected_vehicle.variable_cost;
 
-        /* Add route to current solution */
-        sol.routes.push(RouteEntry {
-          vehicle_id: selected_vehicle_id,
-          clients: route,
-          route_time: route_distance,
-          route_cost: route_cost,
-        });
-      }
+      /* Add route to current solution */
+      sol.routes.push(RouteEntry {
+        vehicle_id: selected_vehicle_id,
+        clients: route,
+        route_time: route_distance,
+        route_cost: route_cost,
+      });
 
       if all_clients.is_empty() {
         break;
@@ -154,22 +147,31 @@ impl Grasp {
     capacity: f64,
     current_time: i32,
     from: usize,
-    available_clients: &Vec<usize>,
+    available_clients: &HashSet<usize>,
     problem: &ProblemInstance
   ) -> Vec<usize> {
-    let mut ret = available_clients.to_vec();
+    let mut feasible_clients = HashSet::new();
+
+    /* Consider clients that satisfy the restrictions */
+    for client_id in available_clients.iter() {
+      let enough_capacity = problem.clients[*client_id].demand < capacity;
+      let enough_time = problem.clients[*client_id].latest > current_time + problem.distances[from][*client_id];
+
+      if enough_capacity && enough_time {
+        feasible_clients.insert(client_id.to_owned());
+      }
+    }
+
+    let mut ret: Vec<usize> = feasible_clients.iter().cloned().collect();
+
     let client_keys: Vec<f64> = problem.clients
       .iter()
-      .map(|client| client.id.to_owned())
-      .filter(|id| problem.clients[*id].demand < capacity)
-      .filter(|id| {
-        problem.clients[*id].latest > current_time + problem.distances[from][*id]
-      })
-      .map(|id| {
-        let index = id.to_owned();
-        self.config.demand_weight * problem.clients[index].demand +
-        self.config.time_weight * problem.distances[from][index] as f64
-      }).collect();
+      .map(|client| self.compute_client_weight(
+        client,
+        problem.distances[from][client.id],
+        current_time,
+      ))
+      .collect();
 
     ret.sort_by(|a, b| {
       client_keys[a.to_owned()].partial_cmp(&client_keys[b.to_owned()]).unwrap()
@@ -185,5 +187,16 @@ impl Grasp {
       None => None,
       Some(value) => Some(value.to_owned())
     }
+  }
+
+  /* Client weight depends on:
+   * - Distance from current node
+   * - Demand
+   * - Next to be unavailable
+   */
+  fn compute_client_weight(&self, client: &Client, distance: Time, current_time: Time) -> f64 {
+    self.config.demand_weight * client.demand +
+    self.config.distance_weight * distance as f64 +
+    self.config.time_weight * (client.earliest - current_time) as f64
   }
 }

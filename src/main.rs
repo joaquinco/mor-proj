@@ -61,5 +61,7 @@ fn main() {
 
   config.instance.init();
   config.instance.validate().unwrap();
-  runner::run(config);
+  let sol = runner::run(config);
+
+  info!("Solution found:\n {}", sol);
 }

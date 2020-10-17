@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::{Serialize, Deserialize};
 
 pub type Time = i32;
@@ -20,14 +22,6 @@ pub struct VehicleDefinition {
   pub variable_cost: Cost,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
-pub struct RouteEntry {
-  pub vehicle_id: usize,
-  pub clients: Vec<usize>,
-  pub route_time: Time,
-  pub route_cost: Cost,
-}
-
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Client {
   /* id is the index */
@@ -37,4 +31,22 @@ pub struct Client {
   pub service_time: Time,
   pub earliest: Time,
   pub latest: Time,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct RouteEntry {
+  pub vehicle_id: usize,
+  pub clients: Vec<usize>,
+  pub route_time: Time,
+  pub route_cost: Cost,
+}
+
+impl fmt::Display for RouteEntry {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(
+      f, "    - vehicle_id: {}\n      route: {}",
+      self.vehicle_id,
+      self.clients.iter().map(|client| client.to_string()).collect::<Vec<String>>().join(", ")
+    )
+  }
 }

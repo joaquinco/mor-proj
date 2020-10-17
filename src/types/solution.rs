@@ -21,6 +21,13 @@ impl Default for Solution {
 
 impl fmt::Display for Solution {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "<Solution value={} routes={}>", self.value, self.routes.len())
+    write!(
+      f,
+"Solution:
+  - value: {}
+  - routes:\n{}",
+      self.value,
+      self.routes.iter().map(|route| format!("{}", route)).collect::<Vec<String>>().join("\n")
+    )
   }
 }

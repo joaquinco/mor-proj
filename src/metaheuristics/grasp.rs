@@ -58,7 +58,6 @@ impl Grasp {
 
       remove_from_list(&mut vehicles, &selected_vehicle_id);
       let selected_vehicle = &problem.vehicles[selected_vehicle_id];
-      debug!("Selected vehicle: {:?}", selected_vehicle);
 
       let mut capacity_left = selected_vehicle.capacity;
       let mut route_distance = 0f64;
@@ -75,7 +74,6 @@ impl Grasp {
 
         let selected_client_id;
         
-        debug!("All clients: {:?}", all_clients);
         match self.rcl_choose(&current_clients) {
           None => return Err("No clients could be chosen".to_string()),
           Some(value) => selected_client_id = value.to_owned(),
@@ -83,11 +81,10 @@ impl Grasp {
         remove_from_list(&mut all_clients, &selected_client_id);
 
         let selected_client = &problem.clients[selected_client_id];
-        debug!("Selected client: {:?}", selected_client);
 
         capacity_left -= selected_client.demand;
         route_distance += problem.distances[current_node][selected_client_id];
-        current_node = selected_vehicle_id;
+        current_node = selected_client_id;
 
         route.push(selected_client_id);
       }
@@ -139,7 +136,6 @@ impl Grasp {
 
   fn get_sorted_clients(&self, capacity: f64, from: usize, available_clients: &Vec<usize>, problem: &ProblemInstance) -> Vec<usize> {
     let mut ret = available_clients.to_vec();
-
     let client_keys: Vec<f64> = problem.clients
       .iter()
       .map(|client| client.id.to_owned())
@@ -159,7 +155,7 @@ impl Grasp {
 
   fn rcl_choose(&self, list: &Vec<usize>) -> Option<usize> {
     let rcl = list[0..cmp::min(self.config.rcl_size, list.len())].to_vec();
-    // debug!("Choosing from {:?}", rcl);
+
     match rcl.choose(&mut rand::thread_rng()) {
       None => None,
       Some(value) => Some(value.to_owned())

@@ -25,7 +25,7 @@ pub fn run(config: Config) -> Solution {
       }
     }
 
-    if iteration % 10 == 0 {
+    if iteration % 50 == 0 {
       let best_value = best.as_ref().unwrap().value;
       debug!("Iteration #{}, best value: {}", iteration, best_value);
     }

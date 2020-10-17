@@ -4,7 +4,7 @@ use rand;
 use rand::seq::SliceRandom;
 use serde::{Serialize, Deserialize};
 
-use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry};
+use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry, Time, Cost};
 
 #[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
@@ -61,7 +61,7 @@ impl Grasp {
       let selected_vehicle = &problem.vehicles[selected_vehicle_id];
 
       let mut capacity_left = selected_vehicle.capacity;
-      let mut route_distance = 0.0;
+      let mut route_distance = 0 as Time;
       let mut route: Vec<usize> = vec![];
       let mut current_node = problem.source;
       let mut current_time = problem.clients[problem.source].earliest;
@@ -86,9 +86,10 @@ impl Grasp {
         let selected_client = &problem.clients[selected_client_id];
 
         /* Update route costs */
+        let arc_time = problem.distances[current_node][selected_client_id];
         capacity_left -= selected_client.demand;
-        route_distance += problem.distances[current_node][selected_client_id];
-        current_time += problem.times[current_node][selected_client_id] + selected_client.service_time;
+        route_distance += arc_time;
+        current_time += arc_time + selected_client.service_time;
         route.push(selected_client_id);
         
         current_node = selected_client_id;
@@ -98,14 +99,18 @@ impl Grasp {
         /* Add costs for going back to source */
         route.push(problem.source.to_owned());
         route_distance += problem.distances[current_node][problem.source];
-        current_time += problem.times[current_node][problem.source];
+        /* TODO: we assume here that the source.latest time is big enough to
+          so we don't verify if time of arrival is lower.
+        */
+
+        let route_cost = selected_vehicle.fixed_cost + route_distance as Cost * selected_vehicle.variable_cost;
 
         /* Add route to current solution */
         sol.routes.push(RouteEntry {
           vehicle_id: selected_vehicle_id,
           clients: route,
-          route_distance: route_distance,
-          route_time: current_time
+          route_time: route_distance,
+          route_cost: route_cost,
         });
       }
 
@@ -158,12 +163,12 @@ impl Grasp {
       .map(|client| client.id.to_owned())
       .filter(|id| problem.clients[*id].demand < capacity)
       .filter(|id| {
-        problem.clients[*id].latest > current_time + problem.times[from][*id]
+        problem.clients[*id].latest > current_time + problem.distances[from][*id]
       })
       .map(|id| {
         let index = id.to_owned();
         self.config.demand_weight * problem.clients[index].demand +
-        self.config.time_weight * problem.distances[from][index]
+        self.config.time_weight * problem.distances[from][index] as f64
       }).collect();
 
     ret.sort_by(|a, b| {

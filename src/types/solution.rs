@@ -1,20 +1,20 @@
 use std::fmt;
 use serde::{Serialize, Deserialize};
 
-use super::others::RouteEntry;
+use super::others::{RouteEntry, Cost};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Solution {
   pub routes: Vec<RouteEntry>,
   #[serde(skip_deserializing)]
-  pub value: f64,
+  pub value: Cost,
 }
 
 impl Default for Solution {
   fn default() -> Solution {
     Solution {
       routes: vec![],
-      value: (1 << 31) as f64,
+      value: (1 << 31) as Cost,
     }
   }
 }

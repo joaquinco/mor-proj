@@ -37,7 +37,7 @@ impl fmt::Display for Config {
       ",
       self.instance_name,
       self.iters,
-      self.instance.nodes.len()
+      self.instance.clients.len()
     )
   }
 }

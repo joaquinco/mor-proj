@@ -1,15 +1,14 @@
 use serde::{Serialize, Deserialize};
-use super::{Node, Vehicle, VehicleDefinition, Client, Solution};
+use super::{Vehicle, VehicleDefinition, Client, Solution};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ProblemInstance {
   #[serde(default)]
-  pub source: Node,
+  pub source: usize,
   #[serde(default)]
   pub deviation_penalty: f64,
   #[serde(default)]
   pub allowed_deviation: f64,
-  pub nodes: Vec<Node>,
   pub distances:  Vec<Vec<f64>>,
   pub vehicle_definitions: Vec<VehicleDefinition>,
   #[serde(skip)]
@@ -25,7 +24,6 @@ impl Default for ProblemInstance {
       source: 0,
       deviation_penalty: 0.0,
       allowed_deviation: 0.0,
-      nodes: vec![],
       distances: vec![],
       vehicle_definitions: vec![],
       vehicles: vec![],
@@ -42,16 +40,17 @@ impl ProblemInstance {
     }
 
     self.init_vehicles();
+    self.init_clients();
 
     self.inited = true;
   }
 
   fn init_vehicles(&mut self) {
-    let mut max: i32 = 1000;
+    let mut max: usize = 0;
 
     let vehicles: Vec<Vehicle> = self.vehicle_definitions.iter().flat_map(|vehicle_def| {
       let min = max;
-      max = max + vehicle_def.count;
+      max = max + vehicle_def.count as usize;
       (min..max).map(move |id| {
         Vehicle { id: id, capacity: vehicle_def.capacity }
       })
@@ -60,8 +59,14 @@ impl ProblemInstance {
     self.vehicles = vehicles;
   }
 
+  fn init_clients(&mut self) {
+    for index in 0..self.clients.len() {
+      self.clients[index].id = index;
+    }
+  }
+
   pub fn validate(&self) -> Result<(), String> {
-    let node_count = self.nodes.len();
+    let node_count = self.clients.len();
 
     for (index, distances) in self.distances.iter().enumerate() {
       if distances.len() != node_count {
@@ -81,6 +86,6 @@ impl ProblemInstance {
   }
   
   pub fn evaluate_sol(&self, sol: &mut Solution) {
-    sol.value = sol.routes.iter().map(|route| route.cost).sum();
+    sol.value = sol.routes.iter().map(|route| route.route_distance).sum();
   }
 }

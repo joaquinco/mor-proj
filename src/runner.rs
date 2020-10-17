@@ -9,7 +9,10 @@ pub fn run(config: Config) -> Solution {
   let mh: Grasp = Grasp { config: config.grasp_config };
 
   while iteration != 0 {
-    let mut sol = mh.iterate();
+    let mut sol = match mh.iterate(&config.instance) {
+      Err(error) => panic!("Metaheuristic returned no solution: {}", error),
+      Ok(value) => value,
+    };
 
     config.instance.evaluate_sol(&mut sol);
 
@@ -22,7 +25,7 @@ pub fn run(config: Config) -> Solution {
       }
     }
 
-    if iteration % 100 == 0 {
+    if iteration % 10 == 0 {
       let best_value = best.as_ref().unwrap().value;
       debug!("Iteration #{}, best value: {}", iteration, best_value);
     }

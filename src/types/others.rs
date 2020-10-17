@@ -1,31 +1,32 @@
 use serde::{Serialize, Deserialize};
 
-pub type Node = i32;
-
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct Vehicle {
-  pub id: i32,
+  /* id is the index */
+  pub id: usize,
+  pub capacity: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VehicleDefinition {
+  pub count: i32,
   pub capacity: f64,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct RouteEntry {
-  pub vehicle: Node,
-  pub nodes: Vec<Vehicle>,
-  pub cost: f64,
+  pub vehicle_id: usize,
+  pub clients: Vec<usize>,
+  pub route_distance: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Client {
-  pub id: i32,
+  /* id is the index */
+  #[serde(skip_deserializing)]
+  pub id: usize,
   pub demand: f64,
   pub service_time: f64,
   pub earliest: i32,
   pub latest: i32,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct VehicleDefinition {
-  pub count: i32,
-  pub capacity: f64,
 }

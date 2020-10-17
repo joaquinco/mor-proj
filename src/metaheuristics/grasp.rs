@@ -6,9 +6,10 @@ use serde::{Serialize, Deserialize};
 
 use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry};
 
+#[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GraspConfig {
-  pub time_weight: f64,
+  time_weight: f64,
   demand_weight: f64,
   prioritize_larger_vehicles: bool,
   rcl_size: usize,
@@ -60,13 +61,15 @@ impl Grasp {
       let selected_vehicle = &problem.vehicles[selected_vehicle_id];
 
       let mut capacity_left = selected_vehicle.capacity;
-      let mut route_distance = 0f64;
+      let mut route_distance = 0.0;
       let mut route: Vec<usize> = vec![];
       let mut current_node = problem.source;
+      let mut current_time = problem.clients[problem.source].earliest;
 
       while capacity_left > 0.0 && !all_clients.is_empty()  {
         let current_clients: Vec<usize> = self.get_sorted_clients(
           capacity_left,
+          current_time,
           current_node,
           &all_clients,
           problem
@@ -74,28 +77,35 @@ impl Grasp {
 
         let selected_client_id;
         
+        /* Choose a client */
         match self.rcl_choose(&current_clients) {
           None => return Err("No clients could be chosen".to_string()),
           Some(value) => selected_client_id = value.to_owned(),
         };
         remove_from_list(&mut all_clients, &selected_client_id);
-
         let selected_client = &problem.clients[selected_client_id];
 
+        /* Update route costs */
         capacity_left -= selected_client.demand;
         route_distance += problem.distances[current_node][selected_client_id];
-        current_node = selected_client_id;
-
+        current_time += problem.times[current_node][selected_client_id] + selected_client.service_time;
         route.push(selected_client_id);
+        
+        current_node = selected_client_id;
       }
 
       if !route.is_empty() {
+        /* Add costs for going back to source */
         route.push(problem.source.to_owned());
+        route_distance += problem.distances[current_node][problem.source];
+        current_time += problem.times[current_node][problem.source];
 
+        /* Add route to current solution */
         sol.routes.push(RouteEntry {
           vehicle_id: selected_vehicle_id,
           clients: route,
           route_distance: route_distance,
+          route_time: current_time
         });
       }
 
@@ -134,12 +144,22 @@ impl Grasp {
     vehicles
   }
 
-  fn get_sorted_clients(&self, capacity: f64, from: usize, available_clients: &Vec<usize>, problem: &ProblemInstance) -> Vec<usize> {
+  fn get_sorted_clients(
+    &self,
+    capacity: f64,
+    current_time: i32,
+    from: usize,
+    available_clients: &Vec<usize>,
+    problem: &ProblemInstance
+  ) -> Vec<usize> {
     let mut ret = available_clients.to_vec();
     let client_keys: Vec<f64> = problem.clients
       .iter()
       .map(|client| client.id.to_owned())
       .filter(|id| problem.clients[*id].demand < capacity)
+      .filter(|id| {
+        problem.clients[*id].latest > current_time + problem.times[from][*id]
+      })
       .map(|id| {
         let index = id.to_owned();
         self.config.demand_weight * problem.clients[index].demand +

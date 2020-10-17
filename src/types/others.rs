@@ -1,5 +1,7 @@
 use serde::{Serialize, Deserialize};
 
+type Time = i32;
+
 #[derive(Debug, Default, Serialize)]
 pub struct Vehicle {
   /* id is the index */
@@ -18,6 +20,7 @@ pub struct RouteEntry {
   pub vehicle_id: usize,
   pub clients: Vec<usize>,
   pub route_distance: f64,
+  pub route_time: Time,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -26,7 +29,7 @@ pub struct Client {
   #[serde(skip_deserializing)]
   pub id: usize,
   pub demand: f64,
-  pub service_time: f64,
-  pub earliest: i32,
-  pub latest: i32,
+  pub service_time: Time,
+  pub earliest: Time,
+  pub latest: Time,
 }

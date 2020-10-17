@@ -10,6 +10,7 @@ pub struct ProblemInstance {
   #[serde(default)]
   pub allowed_deviation: f64,
   pub distances:  Vec<Vec<f64>>,
+  pub times: Vec<Vec<i32>>,
   pub vehicle_definitions: Vec<VehicleDefinition>,
   #[serde(skip)]
   pub vehicles: Vec<Vehicle>,
@@ -25,6 +26,7 @@ impl Default for ProblemInstance {
       deviation_penalty: 0.0,
       allowed_deviation: 0.0,
       distances: vec![],
+      times: vec![],
       vehicle_definitions: vec![],
       vehicles: vec![],
       clients: vec![],
@@ -71,6 +73,12 @@ impl ProblemInstance {
     for (index, distances) in self.distances.iter().enumerate() {
       if distances.len() != node_count {
         return Err(format!("Expected distance vector of {} on index {}", node_count, index));
+      }
+    }
+
+    for (index, distances) in self.times.iter().enumerate() {
+      if distances.len() != node_count {
+        return Err(format!("Expected time vector of {} on index {}", node_count, index));
       }
     }
 

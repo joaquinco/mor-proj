@@ -1,12 +1,12 @@
 use crate::types::{Config, Solution};
 use crate::metaheuristics::Grasp;
 
-pub fn run(config: Config) -> Solution {
+pub fn run(config: &Config) -> Solution {
   info!("Using configuration:\n{}", config);
 
   let mut iteration = config.iters;
   let mut best: Option<Solution> = None;
-  let mh: Grasp = Grasp { config: config.grasp_config };
+  let mh: Grasp = Grasp { config: config.grasp_config.clone() };
 
   while iteration != 0 {
     let mut sol = match mh.iterate(&config.instance) {

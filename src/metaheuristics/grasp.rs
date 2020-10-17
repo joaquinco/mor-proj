@@ -8,7 +8,7 @@ use crate::utils::remove_from_vec;
 use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry, Client, Time, Cost};
 
 #[serde(default)]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraspConfig {
   time_weight: f64,
   demand_weight: f64,

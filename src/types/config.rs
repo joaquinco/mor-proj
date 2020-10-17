@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::metaheuristics::GraspConfig;
 
-use super::problem_instance::ProblemInstance;
+use super::{ProblemInstance, Solution};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -40,4 +40,11 @@ impl fmt::Display for Config {
       self.instance.clients.len()
     )
   }
+}
+
+#[derive(Debug, Serialize)]
+pub struct Output {
+  pub name: String,
+  pub solution: Solution,
+  pub instance: ProblemInstance,
 }

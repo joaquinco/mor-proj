@@ -97,14 +97,13 @@ impl Grasp {
         * so we don't verify if time of arrival is lower than source latest.
         */
 
-      let route_cost = selected_vehicle.fixed_cost + route_distance as Cost * selected_vehicle.variable_cost;
-
       /* Add route to current solution */
       sol.routes.push(RouteEntry {
         vehicle_id: selected_vehicle_id,
         clients: route,
         route_time: route_distance,
-        route_cost: route_cost,
+        route_fixed_cost: selected_vehicle.fixed_cost,
+        route_variable_cost: route_distance as Cost * selected_vehicle.variable_cost,
       });
 
       if all_clients.is_empty() {

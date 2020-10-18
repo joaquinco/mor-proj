@@ -38,15 +38,29 @@ pub struct RouteEntry {
   pub vehicle_id: usize,
   pub clients: Vec<usize>,
   pub route_time: Time,
-  pub route_cost: Cost,
+  pub route_fixed_cost: Cost,
+  pub route_variable_cost: Cost,
+}
+
+impl RouteEntry {
+  pub fn route_cost(&self) -> Cost {
+    self.route_fixed_cost + self.route_variable_cost
+  }
 }
 
 impl fmt::Display for RouteEntry {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
-      f, "    - vehicle_id: {}\n      route: {}",
+      f, "    - vehicle_id: {}
+            route: {}
+            time: {},
+            fixed cost: {}
+            variable cost: {}",
       self.vehicle_id,
-      self.clients.iter().map(|client| client.to_string()).collect::<Vec<String>>().join(", ")
+      self.clients.iter().map(|client| client.to_string()).collect::<Vec<String>>().join(", "),
+      self.route_time,
+      self.route_fixed_cost,
+      self.route_variable_cost,
     )
   }
 }

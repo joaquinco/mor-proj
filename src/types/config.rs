@@ -5,14 +5,14 @@ use crate::metaheuristics::GraspConfig;
 
 use super::{ProblemInstance, Solution};
 
+#[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-  #[serde(default)]
   pub iters: i32,
-  #[serde(default)]
+  pub report_every: i32,
+  pub max_error_count: i32,
   pub instance_name: String,
   pub instance: ProblemInstance,
-  #[serde(default)]
   pub grasp_config: GraspConfig,
 }
 
@@ -20,6 +20,8 @@ impl Default for Config {
   fn default() -> Self {
     Self {
       iters: 10,
+      report_every: 50,
+      max_error_count: 300,
       instance_name: String::from("Some instance"),
       instance: Default::default(),
       grasp_config: Default::default(),

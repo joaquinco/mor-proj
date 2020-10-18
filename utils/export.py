@@ -74,6 +74,37 @@ def extract_graph(content):
   
   return clients, distances
 
+def array_regex(var_name):
+  return re.compile('${}\s*=\s*\[((\s*\d+\s*)+)\];'.format(var_name))
+
+capacity_regex = array_regex('q')
+fixed_cost_regex = array_regex('f')
+variable_cost_regex = array_regex('alpha')
+
+def get_vehicle_definitions(content):
+  """
+  Obtain vehicle definitions in the form:
+    q=[200];
+    f=[80];
+    alpha=[1];
+  
+  Which will result in:
+  [{
+    capacity: 200,
+    fixed_cost: 80,
+    variable_cost: 1,
+  }]
+  """
+
+  capacities = capacity_regex.search(content)
+  fixed_costs = fixed_cost_regex.search(content)
+  variable_costs = variable_cost_regex.search(content)
+
+  if not capacities and fixed_costs and variable_cost:
+    raise InfoNotFoundError('Vehicle information not found or missing')
+
+  # TODO: finish this
+
 
 def export_file_to_config(filename):
   """

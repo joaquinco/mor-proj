@@ -11,7 +11,6 @@ use crate::types::{Solution, ProblemInstance, Vehicle, RouteEntry, Client, Time,
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GraspConfig {
   time_weight: f64,
-  demand_weight: f64,
   distance_weight: f64,
   prioritize_larger_vehicles: bool,
   rcl_size: usize,
@@ -21,7 +20,6 @@ impl Default for GraspConfig {
   fn default() -> GraspConfig {
     GraspConfig {
       time_weight: 0.3,
-      demand_weight: 0.3,
       distance_weight: 0.3,
       prioritize_larger_vehicles: false,
       rcl_size: 5,
@@ -190,12 +188,10 @@ impl Grasp {
 
   /* Client weight depends on:
    * - Distance from current node
-   * - Demand
    * - Next to be unavailable
    */
   fn compute_client_weight(&self, client: &Client, distance: Time, current_time: Time) -> f64 {
-    self.config.demand_weight * client.demand +
     self.config.distance_weight * distance as f64 +
-    self.config.time_weight * (client.earliest - current_time) as f64
+    self.config.time_weight * (client.latest - current_time) as f64
   }
 }

@@ -76,7 +76,16 @@ fn main() {
 
   config.instance.init();
   config.instance.validate().unwrap();
-  let sol = runner::run(&config);
+  let result = runner::run(&config);
+  let sol;
+
+  match result {
+    Some(value) => sol = value,
+    None => {
+      info!("No solution found");
+      return;
+    }
+  }
 
   info!("{}", sol);
 

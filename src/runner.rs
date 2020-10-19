@@ -1,7 +1,7 @@
 use crate::types::{Config, Solution};
 use crate::metaheuristics::Grasp;
 
-pub fn run(config: &Config) -> Solution {
+pub fn run(config: &Config) -> Option<Solution> {
   info!("Using configuration:\n{}", config);
 
   let mut iteration = config.iters;
@@ -11,6 +11,8 @@ pub fn run(config: &Config) -> Solution {
   let mut last_error: String = "".to_string();
 
   while iteration != 0 {
+    iteration -= 1;
+
     let mut sol = match mh.iterate(&config.instance) {
       Err(error) => {
         last_error = error;
@@ -35,8 +37,6 @@ pub fn run(config: &Config) -> Solution {
       let best_value = best.as_ref().unwrap().value;
       debug!("Iteration #{}, best value: {}", config.iters - iteration, best_value);
     }
-
-    iteration -= 1;
   }
 
   if error_count > 0 {
@@ -44,5 +44,5 @@ pub fn run(config: &Config) -> Solution {
     error!("Last error was: {}", last_error);
   }
 
-  best.unwrap()
+  best
 }

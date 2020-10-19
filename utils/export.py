@@ -169,8 +169,8 @@ def export_file_to_config(filename):
     with open(outputname, 'w') as out:
       out.write(json.dumps({
         "instance_name": file_base,
-        "iters": 1000,
-        "report_every": 200,
+        "iters": 500,
+        "report_every": 100,
         "instance": {
           "distances": distances,
           "clients": clients,

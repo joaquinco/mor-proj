@@ -48,7 +48,9 @@ def draw_solution_to_figure(data):
     draw_route(ax1, clients, 2, color)
 
   for client in clients_by_id.values():
-    ax1.scatter(*client.get('pos'), marker='o', color=CLIENTS_COLOR)
+    point = client.get('pos')
+    ax1.scatter(*point, marker='o', color=CLIENTS_COLOR)
+    ax1.annotate(client.get('id'), point)
 
   ax1.scatter(*clients_by_id.get(instance.get('source')).get('pos'), marker='s', linewidth=4, color=SOURCE_COLOR)
 
@@ -66,7 +68,7 @@ def draw_solution(filename):
     data = json.loads(file.read())
 
     fig = draw_solution_to_figure(data)
-    fig.savefig(output)
+    fig.savefig(output, dpi=300)
 
     print(output)
 

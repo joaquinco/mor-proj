@@ -86,7 +86,8 @@ impl Grasp {
         current_time = cmp::max(current_time + arc_time, selected_client.earliest);
         current_time += selected_client.service_time;
         route.push(selected_client_id);
-        
+        // debug!("{}, {}, {}", selected_vehicle_id, selected_client_id, current_time);
+
         current_node = selected_client_id;
       }
 
@@ -94,8 +95,8 @@ impl Grasp {
       route.push(problem.source.to_owned());
       route_distance += problem.distances[current_node][problem.source];
       /* TODO: we assume here that the source.latest time is big enough,
-        * so we don't verify if time of arrival is lower than source latest.
-        */
+       * so we don't verify if time of arrival is lower than source latest.
+       */
 
       /* Add route to current solution */
       sol.routes.push(RouteEntry {

@@ -15,7 +15,19 @@ def log_err(*args, **kwargs):
   sys.stderr.write(*args, **kwargs)
 
 
-graph_regex = re.compile('((\d+\s*){7};?)')
+def get_array_content(array_string):
+  return array_string.split('[')[1].split(']')[0].rstrip(';')
+
+
+def as_int_array(value):
+  return list(map(int, value.split()))
+
+
+def euclidean(p1, p2):
+  return math.sqrt(sum([
+    (p1[i] - p2[i]) ** 2 for i in range(0, len(p1))
+  ]))
+
 
 def get_clients(node_infos: str):
   clients = []
@@ -33,12 +45,6 @@ def get_clients(node_infos: str):
   return clients
 
 
-def euclidean(p1, p2):
-  return math.sqrt(sum([
-    (p1[i] - p2[i]) ** 2 for i in range(0, len(p1))
-  ]))
-
-
 def get_distances(clients):
   distances = [[0] * len(clients) for _ in clients]
 
@@ -47,6 +53,12 @@ def get_distances(clients):
       distances[idx1][idx2] = int(euclidean(c1.get('pos'), c2.get('pos')))
 
   return distances
+
+
+graph_regex = re.compile(
+  'datos\s*=\s*\[(((\s*\d+\s*){7};)*(\s*\d+\s*)){7}\];',
+  re.MULTILINE,
+)
 
 
 def extract_graph(content):
@@ -64,10 +76,11 @@ def extract_graph(content):
     6. latest time
     7. service time
   """
-  node_matches = [match for match, _ in graph_regex.findall(content)]
+  match = graph_regex.search(content)
+  if not match:
+    raise InfoNotFoundError("Missing nodes information (datos=[...];")
 
-  if not node_matches:
-    raise InfoNotFoundError("Missing nodes information")
+  node_matches = get_array_content(match.group(0)).split(';')
 
   clients = get_clients(node_matches)
   distances = get_distances(clients)
@@ -87,13 +100,6 @@ vehicle_type_regex = re.compile(
   re.MULTILINE
 )
 
-
-def get_array_content(array_string):
-  return array_string.split('[')[1].split(']')[0].rstrip(';')
-
-
-def as_int_array(value):
-  return list(map(int, value.split()))
 
 def extract_vehicle_definitions(content):
   """

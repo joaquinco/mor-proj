@@ -35,11 +35,13 @@ impl fmt::Display for Config {
       f,
       "- instance name: {}\n\
       - iters: {}\n\
-      - node count: {}\
+      - client count: {}\n\
+      - vehicle count: {}
       ",
       self.instance_name,
       self.iters,
-      self.instance.clients.len()
+      self.instance.clients.len(),
+      self.instance.vehicles.len()
     )
   }
 }

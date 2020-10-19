@@ -82,7 +82,9 @@ impl Grasp {
         let arc_time = problem.distances[current_node][selected_client_id];
         capacity_left -= selected_client.demand;
         route_distance += arc_time;
-        current_time += arc_time + selected_client.service_time;
+        /* Note: wait_time = current_time + arc_time - selected_client.earliest */
+        current_time = cmp::max(current_time + arc_time, selected_client.earliest);
+        current_time += selected_client.service_time;
         route.push(selected_client_id);
         
         current_node = selected_client_id;

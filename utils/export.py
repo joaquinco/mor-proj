@@ -6,13 +6,11 @@ import os
 import re
 import sys
 
+from misc import log_err
+
 
 class InfoNotFoundError(Exception):
   pass
-
-
-def log_err(*args, **kwargs):
-  sys.stderr.write(*args, **kwargs)
 
 
 def get_array_content(array_string):

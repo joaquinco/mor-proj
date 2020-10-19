@@ -11,7 +11,7 @@ pub struct ProblemInstance {
   pub allowed_deviation: f64,
   pub distances:  Vec<Vec<Time>>,
   pub vehicle_definitions: Vec<VehicleDefinition>,
-  #[serde(skip)]
+  #[serde(skip_deserializing)]
   pub vehicles: Vec<Vehicle>,
   pub clients: Vec<Client>,
   #[serde(skip)]

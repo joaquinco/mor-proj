@@ -1,3 +1,4 @@
 /target
 .vscode/
 /data/
+__pycache__

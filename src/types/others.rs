@@ -31,6 +31,8 @@ pub struct Client {
   pub service_time: Time,
   pub earliest: Time,
   pub latest: Time,
+  /* pos is not actually used but needed to draw the result from the output */
+  pub pos: [f64; 2],
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]

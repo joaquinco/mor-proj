@@ -15,7 +15,7 @@ def log_err(*args, **kwargs):
   sys.stderr.write(*args, **kwargs)
 
 
-graph_regex = re.compile('((\d+\s*){7};)')
+graph_regex = re.compile('((\d+\s*){7};?)')
 
 def get_clients(node_infos: str):
   clients = []
@@ -71,22 +71,37 @@ def extract_graph(content):
 
   clients = get_clients(node_matches)
   distances = get_distances(clients)
-  
+
   return clients, distances
 
+
 def array_regex(var_name):
-  return re.compile('${}\s*=\s*\[((\s*\d+\s*)+)\];'.format(var_name))
+  return re.compile('\\b{}\s*=\s*\[((\s*\d+\s*)+)\];'.format(var_name))
+
 
 capacity_regex = array_regex('q')
 fixed_cost_regex = array_regex('f')
 variable_cost_regex = array_regex('alpha')
+vehicle_type_regex = re.compile(
+  'SC\s*=\s*\[(((\s*\d+\s*)+;)*(\s*\d+\s*))+\];',
+  re.MULTILINE
+)
 
-def get_vehicle_definitions(content):
+
+def get_array_content(array_string):
+  return array_string.split('[')[1].split(']')[0].rstrip(';')
+
+
+def as_int_array(value):
+  return list(map(int, value.split()))
+
+def extract_vehicle_definitions(content):
   """
   Obtain vehicle definitions in the form:
-    q=[200];
-    f=[80];
-    alpha=[1];
+    q=[200 100];
+    f=[80 40];
+    alpha=[1 1];
+    SC=[1 1 1 0; 0 0 0 1;];
   
   Which will result in:
   [{
@@ -95,15 +110,46 @@ def get_vehicle_definitions(content):
     variable_cost: 1,
   }]
   """
+  values = dict(
+    capacities=capacity_regex,
+    fixed_costs=fixed_cost_regex,
+    variable_costs=variable_cost_regex,
+    vehicle_types=vehicle_type_regex,
+  )
 
-  capacities = capacity_regex.search(content)
-  fixed_costs = fixed_cost_regex.search(content)
-  variable_costs = variable_cost_regex.search(content)
+  for key, regex in list(values.items()):
+    match = regex.search(content)
 
-  if not capacities and fixed_costs and variable_cost:
-    raise InfoNotFoundError('Vehicle information not found or missing')
+    if not match:
+      raise InfoNotFoundError('Missing  vehicles information: {}'.format(key))
+  
+    values[key] = match.group(0)
 
-  # TODO: finish this
+  ret = []
+
+  capacities = as_int_array(get_array_content(values['capacities']))
+  fixed_costs = as_int_array(get_array_content(values['fixed_costs']))
+  variable_costs = as_int_array(get_array_content(values['variable_costs']))
+  vehicle_types = get_array_content(values['vehicle_types'])
+
+  try:
+    for index, type_array in enumerate(vehicle_types.split(';')):
+      vehicle_count = sum(map(int, type_array.split()))
+
+      ret.append({
+        "count": vehicle_count,
+        "capacity": capacities[index],
+        "fixed_cost": fixed_costs[index],
+        "variable_cost": variable_costs[index],
+      })
+  except IndexError:
+    raise InfoNotFoundError(
+      'Vehicle information is malformed\nq={}\nf={}\nalpha={}\n'.format(
+        capacities, fixed_costs, variable_costs
+      )
+    )
+
+  return ret
 
 
 def export_file_to_config(filename):
@@ -114,19 +160,30 @@ def export_file_to_config(filename):
   outputname = "{}.json".format(file_base)
 
   with open(filename, 'r') as file:
-    content = "\n".join(list(file))
+    # File content without comments
+    content = "\n".join(filter(lambda line: not line.startswith('%'), list(file)))
 
     clients, distances = extract_graph(content)
+    vehicle_definitions = extract_vehicle_definitions(content)
 
     with open(outputname, 'w') as out:
       out.write(json.dumps({
         "instance_name": file_base,
-        "iters": 300,
+        "iters": 1000,
+        "report_every": 200,
         "instance": {
           "distances": distances,
           "clients": clients,
+          "vehicle_definitions": vehicle_definitions,
+        },
+        "grasp_config": {
+          "distance_weight": 1,
+          "rcl_size": 2,
+          "time_weight": 1,
         }
       }))
+
+    print(outputname)
 
 
 def main(args):

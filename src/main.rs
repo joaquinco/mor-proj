@@ -8,7 +8,6 @@ use std::io::{BufReader, Write};
 use clap::{Arg, App, ArgMatches};
 
 #[macro_use] mod logger;
-mod utils;
 mod types;
 mod metaheuristics;
 mod runner;

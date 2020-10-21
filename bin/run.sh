@@ -1,9 +1,13 @@
 #!/bin/bash
 
-
 convert="python utils/export.py"
-runheuristic="./target/release/mor-proj"
 drawsolution="python utils/draw.py"
+
+if [ -n "$HEURISTIC_RUN" ]; then
+  runheuristic=$HEURISTIC_RUN
+else
+  runheuristic="./target/release/mor-proj"
+fi
 
 execute_staff() {
   file=$1

@@ -82,12 +82,13 @@ impl Grasp {
         let arc_time = problem.distances[current_node][selected_client_id];
         capacity_left -= selected_client.demand;
         route_distance += arc_time;
-        /* Note: wait_time = current_time + arc_time - selected_client.earliest */
-        current_time = cmp::max(current_time + arc_time, selected_client.earliest);
-        current_time += selected_client.service_time;
-        route.push(selected_client_id);
-        // debug!("{}, {}, {}", selected_vehicle_id, selected_client_id, current_time);
+        if current_node == problem.source {
+          current_time = cmp::max(arc_time, selected_client.earliest);
+        } else {
+          current_time += arc_time + selected_client.service_time;
+        }
 
+        route.push(selected_client_id);
         current_node = selected_client_id;
       }
 
@@ -154,8 +155,10 @@ impl Grasp {
 
     /* Consider clients that satisfy the restrictions */
     for client_id in available_clients.iter() {
-      let enough_capacity = problem.clients[*client_id].demand < capacity;
-      let enough_time = problem.clients[*client_id].latest > current_time + problem.distances[from][*client_id];
+      let client = &problem.clients[*client_id];
+      let enough_capacity = client.demand < capacity;
+      let arrival_time = current_time + problem.distances[from][*client_id];
+      let enough_time = from == problem.source || (client.earliest <= arrival_time && arrival_time <= client.latest);
 
       if enough_capacity && enough_time {
         feasible_clients.insert(client_id.to_owned());

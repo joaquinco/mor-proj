@@ -44,8 +44,6 @@ struct GraspRoute {
   pub route_time: Time,
   pub capacity_left: f64,
   pub route: Vec<usize>,
-  /* This field is just a cache */
-  pub unused_moves: Option<Vec<BasicMove>>,
 }
 
 impl GraspRoute {
@@ -65,7 +63,6 @@ impl GraspRoute {
       self.current_time += arc_time;
     }
     self.current_time += client_to.service_time;
-    self.unused_moves = None;
   }
 }
 
@@ -101,7 +98,7 @@ impl Grasp {
         Some(value) => next_move = value,
         None => return Err("No vehicle left".to_string()),
       };
-      debug!("moves {:?}", &moves);
+      // debug!("moves {:?}", &moves);
       let client_id = next_move.target_client_id;
       all_clients.remove(&client_id);
 
@@ -157,24 +154,20 @@ impl Grasp {
 
     for vroute in vehicle_routes.values() {
       let mut move_list: Vec<BasicMove>;
-      match vroute.unused_moves.clone() {
-        Some(value) => move_list = value,
-        None => {
-          move_list = available_clients
-            .iter()
-            .filter(|&client_id| {
-              let client = &problem.clients[*client_id];
-              let enough_capacity = client.demand < vroute.capacity_left;
-              let arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
-              let enough_time = vroute.current_client_id == problem.source || (client.earliest <= arrival_time && arrival_time <= client.latest);
-        
-              enough_capacity && enough_time
-            })
-            .map(|client_id| BasicMove(*client_id, self.compute_move_weight(vroute, *client_id, problem)))
-            .collect();
-        }
-      }
-      
+
+      /* Generate list of possible moves for each vehicle */
+      move_list = available_clients
+        .iter()
+        .filter(|&client_id| {
+          let client = &problem.clients[*client_id];
+          let enough_capacity = client.demand < vroute.capacity_left;
+          let arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
+          let enough_time = vroute.current_client_id == problem.source || (client.earliest <= arrival_time && arrival_time <= client.latest);
+    
+          enough_capacity && enough_time
+        })
+        .map(|client_id| BasicMove(*client_id, self.compute_move_weight(vroute, *client_id, problem)))
+        .collect();
 
       /* Select best move and add it to moves rcl */
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());

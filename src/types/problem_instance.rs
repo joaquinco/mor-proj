@@ -93,8 +93,7 @@ impl ProblemInstance {
   /* Objective calculation */
   pub fn evaluate_sol(&self, sol: &mut Solution) {
     let truck_cost = sol.routes.iter().map(|route| route.route_cost()).sum::<Cost>();
-    let time_cost = sol.routes.iter().map(|route| route.route_time).sum::<Time>();
 
-    sol.value = truck_cost + time_cost as Cost;
+    sol.value = truck_cost;
   }
 }

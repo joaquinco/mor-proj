@@ -141,7 +141,7 @@ def extract_vehicle_definitions(content):
       vehicle_count = sum(map(int, type_array.split()))
 
       ret.append({
-        "count": vehicle_count,
+        "count": vehicle_count + 1,
         "capacity": capacities[index],
         "fixed_cost": fixed_costs[index],
         "variable_cost": variable_costs[index],
@@ -173,7 +173,7 @@ def export_file_to_config(filename):
     with open(outputname, 'w') as out:
       out.write(json.dumps({
         "instance_name": file_base,
-        "iters": 500,
+        "iters": 1000,
         "report_every": 100,
         "instance": {
           "distances": distances,

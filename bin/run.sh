@@ -22,12 +22,11 @@ execute_staff() {
   $runheuristic $file -o $solution
 
   if [ $? -ne 0 ]; then
-    echo "Error running metaheuristic"
     return
   fi
 
   if [ ! -e $solution ]; then
-    exit 0
+    return
   fi
 
   $drawsolution $solution

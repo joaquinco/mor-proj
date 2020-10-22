@@ -47,14 +47,13 @@ struct GraspRoute {
 }
 
 impl GraspRoute {
-  pub fn update(&mut self, next_move: &GraspRouteMove, problem: &ProblemInstance) {
-    let to_id = next_move.target_client_id;
+  pub fn update(&mut self, target_client_id: usize, problem: &ProblemInstance) {
     let from_id = self.current_client_id;
-    self.route.push(to_id);
+    self.route.push(target_client_id);
 
-    let client_to = &problem.clients[to_id];
+    let client_to = &problem.clients[target_client_id];
     /* Update route costs */
-    let arc_time = problem.distances[from_id][to_id];
+    let arc_time = problem.distances[from_id][target_client_id];
     self.capacity_left -= client_to.demand;
     self.route_time += arc_time;
     if from_id == problem.source {
@@ -104,7 +103,7 @@ impl Grasp {
 
       match vehicle_routes.get_mut(&next_move.vehicle_id) {
         Some(vroute) => {
-          vroute.update(next_move, problem);
+          vroute.update(next_move.target_client_id , problem);
         },
         None => (),
       };
@@ -112,12 +111,14 @@ impl Grasp {
 
     let mut sol: Solution = Default::default();
 
-    for vroute in vehicle_routes.values() {
+    for vehicle in problem.vehicles.iter() {
+      let vroute = vehicle_routes.get_mut(&vehicle.id).unwrap();
+
       if vroute.route.len() < 2 {
         continue
       }
 
-      let vehicle = &problem.vehicles[vroute.vehicle_id];
+      vroute.update(problem.source, &problem);
 
       sol.routes.push(RouteEntry {
         vehicle_id: vroute.vehicle_id,

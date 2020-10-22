@@ -35,7 +35,7 @@ pub fn run(config: &Config) -> Option<Solution> {
 
     if iteration % config.report_every == 0 {
       let best_value = best.as_ref().unwrap().value;
-      debug!("Iteration #{}, best value: {}", config.iters - iteration, best_value);
+      info!("Iteration #{}, best value: {}", config.iters - iteration, best_value);
     }
   }
 

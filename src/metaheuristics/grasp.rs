@@ -49,11 +49,12 @@ struct GraspRoute {
 impl GraspRoute {
   pub fn update(&mut self, target_client_id: usize, problem: &ProblemInstance) {
     let from_id = self.current_client_id;
-    self.route.push(target_client_id);
-
     let client_to = &problem.clients[target_client_id];
-    /* Update route costs */
     let arc_time = problem.distances[from_id][target_client_id];
+
+    /* Update route costs */
+    self.current_client_id = target_client_id;
+    self.route.push(target_client_id);
     self.capacity_left -= client_to.demand;
     self.route_time += arc_time;
     if from_id == problem.source {
@@ -92,12 +93,13 @@ impl Grasp {
       let mut moves = self.get_possible_moves(&vehicle_routes, &all_clients, &problem);
 
       moves.sort_by(|m1, m2| m1.cost.partial_cmp(&m2.cost).unwrap());
+
       let next_move;
       match self.rcl_choose(&moves) {
         Some(value) => next_move = value,
-        None => return Err("No vehicle left".to_string()),
+        None => return Err("Couldn't find a feasible solution".to_string()),
       };
-      // debug!("moves {:?}", &moves);
+
       let client_id = next_move.target_client_id;
       all_clients.remove(&client_id);
 
@@ -114,6 +116,7 @@ impl Grasp {
     for vehicle in problem.vehicles.iter() {
       let vroute = vehicle_routes.get_mut(&vehicle.id).unwrap();
 
+      /* problem.source is always added to the route */
       if vroute.route.len() < 2 {
         continue
       }
@@ -161,7 +164,7 @@ impl Grasp {
         .iter()
         .filter(|&client_id| {
           let client = &problem.clients[*client_id];
-          let enough_capacity = client.demand < vroute.capacity_left;
+          let enough_capacity = client.demand <= vroute.capacity_left;
           let arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
           let enough_time = vroute.current_client_id == problem.source || (client.earliest <= arrival_time && arrival_time <= client.latest);
     
@@ -172,8 +175,8 @@ impl Grasp {
 
       /* Select best move and add it to moves rcl */
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());
-      
-      match move_list.first() {
+
+      match self.rcl_choose(&move_list) {
         Some(BasicMove(client_id, cost)) => {
           ret.push(GraspRouteMove {
             cost: *cost,
@@ -204,7 +207,7 @@ impl Grasp {
     self.config.time_weight * (client.latest - vroute.current_time) as f64
   }
 
-  fn rcl_choose<'a, T>(&self, list: &'a Vec<T>) -> Option<&'a T> {
+  fn rcl_choose<'a, T: std::fmt::Debug>(&self, list: &'a Vec<T>) -> Option<&'a T> {
     let mut rcl: Vec<&T> = vec![];
 
     for index in 0..cmp::min(self.config.rcl_size, list.len()) {
@@ -213,7 +216,9 @@ impl Grasp {
 
     match rcl.choose(&mut rand::thread_rng()) {
       None => None,
-      Some(&value) => Some(value)
+      Some(&value) => {
+        Some(value)
+      }
     }
   }
 }

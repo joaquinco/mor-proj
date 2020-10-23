@@ -13,6 +13,7 @@ pub struct GraspConfig {
   distance_weight: f64,
   prioritize_larger_vehicles: bool,
   rcl_size: usize,
+  moves_per_vehicle: usize,
 }
 
 impl Default for GraspConfig {
@@ -22,6 +23,7 @@ impl Default for GraspConfig {
       distance_weight: 0.3,
       prioritize_larger_vehicles: false,
       rcl_size: 5,
+      moves_per_vehicle: 1,
     }
   }
 }
@@ -100,8 +102,7 @@ impl Grasp {
         None => return Err("Couldn't find a feasible solution".to_string()),
       };
 
-      let client_id = next_move.target_client_id;
-      all_clients.remove(&client_id);
+      all_clients.remove(&next_move.target_client_id);
 
       match vehicle_routes.get_mut(&next_move.vehicle_id) {
         Some(vroute) => {
@@ -176,35 +177,32 @@ impl Grasp {
       /* Select best move and add it to moves rcl */
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());
 
-      match self.rcl_choose(&move_list) {
-        Some(BasicMove(client_id, cost)) => {
-          ret.push(GraspRouteMove {
-            cost: *cost,
-            target_client_id: *client_id,
-            vehicle_id: vroute.vehicle_id,
-          })
-        },
-        _ => (),
-      };
+      for index in 0..cmp::min(self.config.moves_per_vehicle, move_list.len()) {
+        let BasicMove(client_id, cost) = move_list[index];
+        ret.push(GraspRouteMove {
+          cost: cost,
+          target_client_id: client_id,
+          vehicle_id: vroute.vehicle_id,
+        })
+      }
     }
 
     ret
   }
 
-  /*
-   * Computes the cost of the move: vroute.current_client -> to considering current time
-   */
-  fn compute_move_weight(&self, vroute: &GraspRoute, to: usize, problem: &ProblemInstance) -> f64 {
+   ///
+   /// Computes the cost of the move: vroute.current_client -> to considering current time
+   /// Assumes to client_to satisfies the restrictions of being eligible.
+  fn compute_move_weight(&self, vroute: &GraspRoute, client_to: usize, problem: &ProblemInstance) -> f64 {
     let fixed_cost = if problem.source == vroute.current_client_id {
                       problem.vehicles[vroute.vehicle_id].fixed_cost
                     } else {
                       0 as Cost
                     };
-    let distance = problem.distances[vroute.current_client_id][to];
-    let client = &problem.clients[to];
-                    
-    fixed_cost + self.config.distance_weight * distance as f64 +
-    self.config.time_weight * (client.latest - vroute.current_time) as f64
+    let distance = problem.distances[vroute.current_client_id][client_to];
+    let time = (problem.clients[client_to].latest - vroute.current_time - distance) as f64;
+
+    fixed_cost + self.config.distance_weight * distance as f64 + self.config.time_weight * time
   }
 
   fn rcl_choose<'a, T: std::fmt::Debug>(&self, list: &'a Vec<T>) -> Option<&'a T> {

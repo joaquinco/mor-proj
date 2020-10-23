@@ -174,7 +174,7 @@ def export_file_to_config(filename):
       out.write(json.dumps({
         "instance_name": file_base,
         "iters": 1000,
-        "report_every": 100,
+        "report_every": 200,
         "instance": {
           "distances": distances,
           "clients": clients,
@@ -182,8 +182,9 @@ def export_file_to_config(filename):
         },
         "grasp_config": {
           "distance_weight": 1,
-          "rcl_size": 2,
-          "time_weight": 1,
+          "time_weight": 0.5,
+          "moves_per_vehicle": 1,
+          "rcl_size": 3,
         }
       }))
 

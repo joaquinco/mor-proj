@@ -55,7 +55,7 @@ impl fmt::Display for RouteEntry {
     write!(
       f, "    - vehicle_id: {}
             route: {}
-            time: {},
+            route time: {}
             fixed cost: {}
             variable cost: {}",
       self.vehicle_id,

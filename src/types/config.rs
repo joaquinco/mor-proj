@@ -14,6 +14,7 @@ pub struct Config {
   pub instance_name: String,
   pub instance: ProblemInstance,
   pub grasp_config: GraspConfig,
+  pub number_of_threads: i32,
 }
 
 impl Default for Config {
@@ -25,6 +26,7 @@ impl Default for Config {
       instance_name: String::from("Some instance"),
       instance: Default::default(),
       grasp_config: Default::default(),
+      number_of_threads: 1,
     }
   }
 }
@@ -36,12 +38,14 @@ impl fmt::Display for Config {
       "- instance name: {}\n\
       - iters: {}\n\
       - client count: {}\n\
-      - vehicle count: {}
+      - vehicle count: {}\n\
+      - number of threads: {}
       ",
       self.instance_name,
       self.iters,
       self.instance.clients.len(),
-      self.instance.vehicles.len()
+      self.instance.vehicles.len(),
+      self.number_of_threads,
     )
   }
 }

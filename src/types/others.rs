@@ -53,11 +53,12 @@ impl RouteEntry {
 impl fmt::Display for RouteEntry {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
-      f, "    - vehicle_id: {}
-            route: {}
-            route time: {}
-            fixed cost: {}
-            variable cost: {}",
+      f,
+"    - vehicle_id: {}
+      route: {}
+      route time: {}
+      fixed cost: {}
+      variable cost: {}",
       self.vehicle_id,
       self.clients.iter().map(|client| client.to_string()).collect::<Vec<String>>().join(", "),
       self.route_time,

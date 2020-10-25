@@ -1,13 +1,13 @@
+use std::fmt;
+
 use serde::{Serialize, Deserialize};
 use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost};
 
+#[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProblemInstance {
-  #[serde(default)]
   pub source: usize,
-  #[serde(default)]
   pub deviation_penalty: f64,
-  #[serde(default)]
   pub allowed_deviation: f64,
   pub distances:  Vec<Vec<Time>>,
   pub vehicle_definitions: Vec<VehicleDefinition>,
@@ -95,5 +95,19 @@ impl ProblemInstance {
     let truck_cost = sol.routes.iter().map(|route| route.route_cost()).sum::<Cost>();
 
     sol.value = truck_cost;
+  }
+}
+
+impl fmt::Display for ProblemInstance {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(
+      f,
+      "  vehicles: {}
+  nodes: {}
+  allowed excess: {}",
+      self.vehicles.len(),
+      self.clients.len(),
+      self.allowed_deviation,
+    )
   }
 }

@@ -37,15 +37,12 @@ impl fmt::Display for Config {
       f,
       "- instance name: {}\n\
       - iters: {}\n\
-      - client count: {}\n\
-      - vehicle count: {}\n\
-      - number of threads: {}
-      ",
+      - number of threads: {}\n\
+      - instance:\n{}",
       self.instance_name,
       self.iters,
-      self.instance.clients.len(),
-      self.instance.vehicles.len(),
       self.number_of_threads,
+      self.instance,
     )
   }
 }

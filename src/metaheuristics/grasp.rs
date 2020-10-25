@@ -11,7 +11,6 @@ use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
 pub struct GraspConfig {
   time_weight: f64,
   distance_weight: f64,
-  wait_time_enabled: bool,
   rcl_size: usize,
   moves_per_vehicle: usize,
 }
@@ -21,7 +20,6 @@ impl Default for GraspConfig {
     GraspConfig {
       time_weight: 0.3,
       distance_weight: 0.3,
-      wait_time_enabled: false,
       rcl_size: 5,
       moves_per_vehicle: 1,
     }
@@ -160,23 +158,30 @@ impl Grasp {
     let mut ret: Vec<GraspRouteMove> = vec![];
 
     for vroute in vehicle_routes.values() {
-      let mut move_list: Vec<BasicMove>;
 
       /* Generate list of possible moves for each vehicle */
-      move_list = available_clients
-        .iter()
-        .filter(|&client_id| {
-          let client = &problem.clients[*client_id];
-          let enough_capacity = client.demand <= vroute.capacity_left;
-          let arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
-          let enough_time = vroute.current_client_id == problem.source || (
-            (self.config.wait_time_enabled || client.earliest <= arrival_time) && arrival_time <= client.latest
-          );
-    
-          enough_capacity && enough_time
-        })
-        .map(|client_id| BasicMove(*client_id, self.compute_move_weight(vroute, *client_id, problem)))
-        .collect();
+      let mut move_list = vec![];
+      for client_id in available_clients {
+        let client = &problem.clients[*client_id];
+        let enough_capacity = client.demand <= vroute.capacity_left;
+        let mut arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
+
+        if client.id == problem.source {
+          arrival_time = cmp::max(arrival_time, client.earliest);
+        }
+
+        let max_overtime = ((client.latest - client.earliest) as f64 * problem.allowed_deviation) as Time;
+        let enough_time = vroute.current_client_id == problem.source || (
+          client.earliest <= arrival_time && arrival_time <= client.latest + max_overtime
+        );
+
+        if !(enough_capacity && enough_time) {
+          continue
+        }
+
+        let move_cost = self.compute_move_cost(problem, vroute, *client_id, arrival_time);
+        move_list.push(BasicMove(*client_id, move_cost));
+      }
 
       /* Select best move and add it to moves rcl */
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());
@@ -195,18 +200,29 @@ impl Grasp {
   }
 
    ///
-   /// Computes the cost of the move: vroute.current_client -> to considering current time
+   /// Computes the cost of the move: from vroute.current_client to client_to considering arrival time
    /// Assumes to client_to satisfies the restrictions of being eligible.
-  fn compute_move_weight(&self, vroute: &GraspRoute, client_to: usize, problem: &ProblemInstance) -> f64 {
+  fn compute_move_cost(
+    &self,
+    problem: &ProblemInstance,
+    vroute: &GraspRoute,
+    client_to: usize,
+    arrival_time: Time
+  ) -> f64 {
     let fixed_cost = if problem.source == vroute.current_client_id {
                       problem.vehicles[vroute.vehicle_id].fixed_cost
                     } else {
                       0 as Cost
                     };
     let distance = problem.distances[vroute.current_client_id][client_to];
-    let time = (problem.clients[client_to].latest - vroute.current_time - distance) as f64;
+    let client = &problem.clients[client_to];
+    let close_proximity_time = cmp::max(client.latest - arrival_time, 0);
+    let overtime = cmp::max(arrival_time - client.latest, 0);
 
-    fixed_cost + self.config.distance_weight * distance as f64 + self.config.time_weight * time
+    fixed_cost
+    + self.config.distance_weight * distance as f64
+    + self.config.time_weight * close_proximity_time as f64
+    + problem.deviation_penalty * overtime as f64
   }
 
   fn rcl_choose<'a, T: std::fmt::Debug>(&self, list: &'a Vec<T>) -> Option<&'a T> {

@@ -24,9 +24,9 @@ impl fmt::Display for Solution {
     write!(
       f,
 "Solution:
-  - value: {}
-  - distance: {}
-  - routes:\n{}",
+  value: {}
+  distance: {}
+  routes:\n{}",
       self.value,
       self.total_route_time(),
       self.routes.iter().map(|route| format!("{}", route)).collect::<Vec<String>>().join("\n")

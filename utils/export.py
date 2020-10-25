@@ -174,7 +174,8 @@ def export_file_to_config(filename):
       out.write(json.dumps({
         "instance_name": file_base,
         "iters": 1000,
-        "report_every": 200,
+        "report_every": 500,
+        "number_of_threads": 2,
         "instance": {
           "distances": distances,
           "clients": clients,

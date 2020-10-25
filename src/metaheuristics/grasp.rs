@@ -11,7 +11,7 @@ use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
 pub struct GraspConfig {
   time_weight: f64,
   distance_weight: f64,
-  prioritize_larger_vehicles: bool,
+  wait_time_enabled: bool,
   rcl_size: usize,
   moves_per_vehicle: usize,
 }
@@ -21,7 +21,7 @@ impl Default for GraspConfig {
     GraspConfig {
       time_weight: 0.3,
       distance_weight: 0.3,
-      prioritize_larger_vehicles: false,
+      wait_time_enabled: false,
       rcl_size: 5,
       moves_per_vehicle: 1,
     }
@@ -59,6 +59,8 @@ impl GraspRoute {
     self.route.push(target_client_id);
     self.capacity_left -= client_to.demand;
     self.route_time += arc_time;
+
+    /* wait time is (if applies): client_to.earliest - current_time - arc_time */
     if from_id == problem.source {
       self.current_time = cmp::max(arc_time, client_to.earliest);
     } else {
@@ -167,7 +169,9 @@ impl Grasp {
           let client = &problem.clients[*client_id];
           let enough_capacity = client.demand <= vroute.capacity_left;
           let arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
-          let enough_time = vroute.current_client_id == problem.source || (client.earliest <= arrival_time && arrival_time <= client.latest);
+          let enough_time = vroute.current_client_id == problem.source || (
+            (self.config.wait_time_enabled || client.earliest <= arrival_time) && arrival_time <= client.latest
+          );
     
           enough_capacity && enough_time
         })

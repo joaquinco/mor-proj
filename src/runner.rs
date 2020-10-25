@@ -74,7 +74,6 @@ pub fn run(config: &Config) -> Option<Solution> {
 
   let mut ret = results.pop().unwrap();
   while !results.is_empty() {
-
     let current = results.pop().unwrap();
 
     if ret.is_none() {

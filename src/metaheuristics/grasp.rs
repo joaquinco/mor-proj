@@ -13,6 +13,7 @@ pub struct GraspConfig {
   wait_time_weight: f64,
   rcl_size: usize,
   moves_per_vehicle: usize,
+  max_wait_time: Time,
 }
 
 impl Default for GraspConfig {
@@ -23,6 +24,7 @@ impl Default for GraspConfig {
       wait_time_weight: 1.0,
       rcl_size: 5,
       moves_per_vehicle: 1,
+      max_wait_time: 10000,
     }
   }
 }
@@ -166,6 +168,10 @@ impl Grasp {
         /* If current_time + distance is less than client.earliest, the vehicle can wait */
 
         let wait_time = cmp::max(client.earliest - arrival_time, 0);
+
+        if wait_time > self.config.max_wait_time {
+          continue
+        }
 
         arrival_time = cmp::max(arrival_time, client.earliest);
 

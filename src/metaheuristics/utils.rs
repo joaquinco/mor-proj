@@ -5,6 +5,7 @@ use rand::seq::SliceRandom;
 
 /// Assumes the list is sorted
 /// Returns an entry of the list from the first 0..size elements
+#[allow(dead_code)]
 pub fn sized_rcl_choose<'a, T>(list: &'a Vec<T>, size: usize) -> Option<&'a T> {
   let mut rcl: Vec<&T> = vec![];
 
@@ -14,9 +15,7 @@ pub fn sized_rcl_choose<'a, T>(list: &'a Vec<T>, size: usize) -> Option<&'a T> {
 
   match rcl.choose(&mut rand::thread_rng()) {
     None => None,
-    Some(&value) => {
-      Some(value)
-    }
+    Some(&value) => Some(value),
   }
 }
 
@@ -54,4 +53,17 @@ pub fn alpha_rcl_choose<'a, T>(list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64) -
   }
 
   sized_rcl_choose(list, max_index + 1)
+}
+
+/// Assumes the list is sorted
+/// Returns an entry of the list from the list elements given the probability
+/// specify by the weights list.
+#[allow(dead_code)]
+pub fn weighted_choose<'a, T>(list: &'a Vec<T>, weights: Vec<f64>) -> Option<&'a T> {
+  let rcl: Vec<(usize, &T)> = list.iter().enumerate().collect();
+
+  match rcl.choose_weighted(&mut rand::thread_rng(), |(index, _)| weights[*index]) {
+    Err(_) => None,
+    Ok((_, value)) => Some(value),
+  }
 }

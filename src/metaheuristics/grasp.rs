@@ -1,10 +1,9 @@
 use std::{cmp, collections::{HashSet, HashMap}};
 
-use rand;
-use rand::seq::SliceRandom;
 use serde::{Serialize, Deserialize};
 
 use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
+use super::utils::sized_rcl_choose;
 
 #[serde(default)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -95,7 +94,7 @@ impl Grasp {
       moves.sort_by(|m1, m2| m1.cost.partial_cmp(&m2.cost).unwrap());
 
       let next_move;
-      match self.rcl_choose(&moves) {
+      match sized_rcl_choose(&moves, self.config.rcl_size) {
         Some(value) => next_move = value,
         None => return Err("Couldn't find a feasible solution".to_string()),
       };
@@ -223,20 +222,5 @@ impl Grasp {
     + self.config.time_weight * close_proximity_time as f64
     + self.config.wait_time_weight * wait_time as f64
     + problem.deviation_penalty * overtime as f64
-  }
-
-  fn rcl_choose<'a, T: std::fmt::Debug>(&self, list: &'a Vec<T>) -> Option<&'a T> {
-    let mut rcl: Vec<&T> = vec![];
-
-    for index in 0..cmp::min(self.config.rcl_size, list.len()) {
-      rcl.push(&list[index]);
-    }
-
-    match rcl.choose(&mut rand::thread_rng()) {
-      None => None,
-      Some(&value) => {
-        Some(value)
-      }
-    }
   }
 }

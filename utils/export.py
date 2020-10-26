@@ -180,12 +180,13 @@ def export_file_to_config(filename):
           "distances": distances,
           "clients": clients,
           "vehicle_definitions": vehicle_definitions,
-          "allowed_deviation": 0.5,
+          "allowed_deviation": 0.0,
           "deviation_penalty": 0.1,
         },
         "grasp_config": {
           "distance_weight": 1,
           "time_weight": 0.5,
+          "wait_time_weight": 1,
           "moves_per_vehicle": 1,
           "rcl_size": 3,
         }

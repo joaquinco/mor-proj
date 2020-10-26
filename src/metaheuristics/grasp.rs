@@ -11,6 +11,7 @@ use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
 pub struct GraspConfig {
   time_weight: f64,
   distance_weight: f64,
+  wait_time_weight: f64,
   rcl_size: usize,
   moves_per_vehicle: usize,
 }
@@ -20,6 +21,7 @@ impl Default for GraspConfig {
     GraspConfig {
       time_weight: 0.3,
       distance_weight: 0.3,
+      wait_time_weight: 1.0,
       rcl_size: 5,
       moves_per_vehicle: 1,
     }
@@ -59,11 +61,7 @@ impl GraspRoute {
     self.route_time += arc_time;
 
     /* wait time is (if applies): client_to.earliest - current_time - arc_time */
-    if from_id == problem.source {
-      self.current_time = cmp::max(arc_time, client_to.earliest);
-    } else {
-      self.current_time += arc_time;
-    }
+    self.current_time = cmp::max(self.current_time + arc_time, client_to.earliest);
     self.current_time += client_to.service_time;
   }
 }
@@ -166,24 +164,24 @@ impl Grasp {
         let enough_capacity = client.demand <= vroute.capacity_left;
         let mut arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
 
-        if client.id == problem.source {
-          arrival_time = cmp::max(arrival_time, client.earliest);
-        }
+        /* If current_time + distance is less than client.earliest, the vehicle can wait */
+
+        let wait_time = cmp::max(client.earliest - arrival_time, 0);
+
+        arrival_time = cmp::max(arrival_time, client.earliest);
 
         let max_overtime = ((client.latest - client.earliest) as f64 * problem.allowed_deviation) as Time;
-        let enough_time = vroute.current_client_id == problem.source || (
-          client.earliest <= arrival_time && arrival_time <= client.latest + max_overtime
-        );
+        let enough_time = arrival_time <= client.latest + max_overtime;
 
         if !(enough_capacity && enough_time) {
           continue
         }
 
-        let move_cost = self.compute_move_cost(problem, vroute, *client_id, arrival_time);
+        let move_cost = self.compute_move_cost(problem, vroute, *client_id, arrival_time, wait_time);
         move_list.push(BasicMove(*client_id, move_cost));
       }
 
-      /* Select best move and add it to moves rcl */
+      /* Sort moves by cost and select the <moves_per_vehicle> bests */
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());
 
       for index in 0..cmp::min(self.config.moves_per_vehicle, move_list.len()) {
@@ -207,7 +205,8 @@ impl Grasp {
     problem: &ProblemInstance,
     vroute: &GraspRoute,
     client_to: usize,
-    arrival_time: Time
+    arrival_time: Time,
+    wait_time: Time
   ) -> f64 {
     let fixed_cost = if problem.source == vroute.current_client_id {
                       problem.vehicles[vroute.vehicle_id].fixed_cost
@@ -222,6 +221,7 @@ impl Grasp {
     fixed_cost
     + self.config.distance_weight * distance as f64
     + self.config.time_weight * close_proximity_time as f64
+    + self.config.wait_time_weight * wait_time as f64
     + problem.deviation_penalty * overtime as f64
   }
 

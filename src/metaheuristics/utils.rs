@@ -3,6 +3,8 @@ use std::cmp;
 use rand;
 use rand::seq::SliceRandom;
 
+use crate::types::Time;
+
 /// Assumes the list is sorted
 /// Returns an entry of the list from the first 0..size elements
 #[allow(dead_code)]
@@ -65,5 +67,14 @@ pub fn weighted_choose<'a, T>(list: &'a Vec<T>, weights: Vec<f64>) -> Option<&'a
   match rcl.choose_weighted(&mut rand::thread_rng(), |(index, _)| weights[*index]) {
     Err(_) => None,
     Ok((_, value)) => Some(value),
+  }
+}
+
+
+pub fn time_max(v1: Time, v2: Time) -> Time {
+  if v1 > v2 {
+    v1
+  } else {
+    v2
   }
 }

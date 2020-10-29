@@ -3,7 +3,7 @@ use std::{cmp, collections::{HashSet, HashMap}};
 use serde::{Serialize, Deserialize};
 
 use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
-use super::utils::sized_rcl_choose;
+use super::utils::{sized_rcl_choose, time_max};
 
 #[serde(default)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,7 +24,7 @@ impl Default for GraspConfig {
       wait_time_weight: 1.0,
       rcl_size: 5,
       moves_per_vehicle: 1,
-      max_wait_time: 10000,
+      max_wait_time: 10000 as Time,
     }
   }
 }
@@ -62,7 +62,7 @@ impl GraspRoute {
     self.route_time += arc_time;
 
     /* wait time is (if applies): client_to.earliest - current_time - arc_time */
-    self.current_time = cmp::max(self.current_time + arc_time, client_to.earliest);
+    self.current_time = time_max(self.current_time + arc_time, client_to.earliest);
     self.current_time += client_to.service_time;
   }
 }
@@ -167,13 +167,13 @@ impl Grasp {
 
         /* If current_time + distance is less than client.earliest, the vehicle can wait */
 
-        let wait_time = cmp::max(client.earliest - arrival_time, 0);
+        let wait_time = time_max(client.earliest - arrival_time, 0 as Time);
 
         if wait_time > self.config.max_wait_time {
           continue
         }
 
-        arrival_time = cmp::max(arrival_time, client.earliest);
+        arrival_time = time_max(arrival_time, client.earliest);
 
         let max_overtime = ((client.latest - client.earliest) as f64 * problem.allowed_deviation) as Time;
         let enough_time = arrival_time <= client.latest + max_overtime;
@@ -220,8 +220,8 @@ impl Grasp {
                     };
     let distance = problem.distances[vroute.current_client_id][client_to];
     let client = &problem.clients[client_to];
-    let close_proximity_time = cmp::max(client.latest - arrival_time, 0);
-    let overtime = cmp::max(arrival_time - client.latest, 0);
+    let close_proximity_time: Time = time_max(client.latest - arrival_time, 0 as Time);
+    let overtime = time_max(arrival_time - client.latest, 0 as Time);
 
     fixed_cost
     + self.config.distance_weight * distance as f64

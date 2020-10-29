@@ -48,7 +48,7 @@ def get_distances(clients):
 
   for idx1, c1 in enumerate(clients):
     for idx2, c2 in enumerate(clients):
-      distances[idx1][idx2] = int(euclidean(c1.get('pos'), c2.get('pos')))
+      distances[idx1][idx2] = euclidean(c1.get('pos'), c2.get('pos'))
 
   return distances
 
@@ -173,8 +173,8 @@ def export_file_to_config(filename):
     with open(outputname, 'w') as out:
       out.write(json.dumps({
         "instance_name": file_base,
-        "iters": 1000,
-        "report_every": 500,
+        "iters": 10000,
+        "report_every": 1000,
         "number_of_threads": 2,
         "instance": {
           "distances": distances,
@@ -184,9 +184,9 @@ def export_file_to_config(filename):
           "deviation_penalty": 0.1,
         },
         "grasp_config": {
-          "distance_weight": 1,
-          "time_weight": 0.5,
-          "wait_time_weight": 1,
+          "distance_weight": 2,
+          "time_weight": 0.9,
+          "wait_time_weight": 0.1,
           "moves_per_vehicle": 1,
           "rcl_size": 3,
         }

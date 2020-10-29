@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::{Serialize, Deserialize};
 
-pub type Time = i32;
+pub type Time = f64;
 pub type Cost = f64;
 
 #[derive(Debug, Default, Serialize)]

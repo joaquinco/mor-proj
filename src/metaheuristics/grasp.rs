@@ -3,7 +3,10 @@ use std::{cmp, collections::{HashSet, HashMap}};
 use serde::{Serialize, Deserialize};
 
 use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
-use super::utils::{sized_rcl_choose, time_max};
+use super::utils::{
+  alpha_rcl_choose,
+  time_max
+};
 
 #[serde(default)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12,6 +15,7 @@ pub struct GraspConfig {
   distance_weight: f64,
   wait_time_weight: f64,
   rcl_size: usize,
+  rcl_alpha: f64,
   moves_per_vehicle: usize,
   max_wait_time: Time,
 }
@@ -23,6 +27,7 @@ impl Default for GraspConfig {
       distance_weight: 0.3,
       wait_time_weight: 1.0,
       rcl_size: 5,
+      rcl_alpha: 0.3,
       moves_per_vehicle: 1,
       max_wait_time: 10000 as Time,
     }
@@ -96,7 +101,7 @@ impl Grasp {
       moves.sort_by(|m1, m2| m1.cost.partial_cmp(&m2.cost).unwrap());
 
       let next_move;
-      match sized_rcl_choose(&moves, self.config.rcl_size) {
+      match self.rcl_choose(&moves) {
         Some(value) => next_move = value,
         None => return Err("Couldn't find a feasible solution".to_string()),
       };
@@ -166,7 +171,6 @@ impl Grasp {
         let mut arrival_time = vroute.current_time + problem.distances[vroute.current_client_id][client.id];
 
         /* If current_time + distance is less than client.earliest, the vehicle can wait */
-
         let wait_time = time_max(client.earliest - arrival_time, 0 as Time);
 
         if wait_time > self.config.max_wait_time {
@@ -214,7 +218,7 @@ impl Grasp {
     wait_time: Time
   ) -> f64 {
     let fixed_cost = if problem.source == vroute.current_client_id {
-                      problem.vehicles[vroute.vehicle_id].fixed_cost
+                      20.0 * problem.vehicles[vroute.vehicle_id].fixed_cost
                     } else {
                       0 as Cost
                     };
@@ -228,5 +232,11 @@ impl Grasp {
     + self.config.time_weight * close_proximity_time as f64
     + self.config.wait_time_weight * wait_time as f64
     + problem.deviation_penalty * overtime as f64
+  }
+
+  fn rcl_choose<'a>(&self, moves: &'a Vec<GraspRouteMove>) -> Option<&'a GraspRouteMove> {
+    let costs: Vec<f64> = moves.iter().map(|m| m.cost).collect();
+
+    alpha_rcl_choose(moves, &costs, self.config.rcl_alpha)
   }
 }

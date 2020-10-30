@@ -57,7 +57,6 @@ pub fn alpha_rcl_choose<'a, T>(list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64) -
   sized_rcl_choose(list, max_index + 1)
 }
 
-/// Assumes the list is sorted
 /// Returns an entry of the list from the list elements given the probability
 /// specify by the weights list.
 #[allow(dead_code)]

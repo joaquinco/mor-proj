@@ -38,7 +38,7 @@ def draw_solution_to_figure(data):
   fig = plt.figure()
   ax1 = fig.add_subplot()
 
-  colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'gray']
+  colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'gray', 'darkred', 'darkmagenta']
 
   for route in routes:
     color = colors.pop()

@@ -141,7 +141,7 @@ def extract_vehicle_definitions(content):
       vehicle_count = sum(map(int, type_array.split()))
 
       ret.append({
-        "count": vehicle_count + 1,
+        "count": vehicle_count + 2,
         "capacity": capacities[index],
         "fixed_cost": fixed_costs[index],
         "variable_cost": variable_costs[index],
@@ -175,7 +175,7 @@ def export_file_to_config(filename):
         "instance_name": file_base,
         "iters": 100000,
         "report_every": 10000,
-        "number_of_threads": 1,
+        "number_of_threads": 2,
         "instance": {
           "distances": distances,
           "clients": clients,
@@ -186,10 +186,10 @@ def export_file_to_config(filename):
         "grasp_config": {
           "distance_weight": 1,
           "time_weight": 0.5,
-          "wait_time_weight": 0.1,
+          "wait_time_weight": 0.2,
           "moves_per_vehicle": 1,
-          "rcl_alpha": 0.5,
-          "rcl_min_size": 2,
+          "rcl_alpha": 0.8,
+          "rcl_min_size": 3,
         }
       }))
 

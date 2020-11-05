@@ -29,7 +29,7 @@ impl Default for GraspConfig {
       wait_time_weight: 1.0,
       rcl_size: 5,
       rcl_alpha: 0.3,
-      rcl_min_size: 2,
+      rcl_min_size: 1,
       moves_per_vehicle: 1,
       max_wait_time: 10000 as Time,
     }

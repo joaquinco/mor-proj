@@ -16,6 +16,7 @@ pub struct GraspConfig {
   wait_time_weight: f64,
   rcl_size: usize,
   rcl_alpha: f64,
+  rcl_min_size: usize,
   moves_per_vehicle: usize,
   max_wait_time: Time,
 }
@@ -28,6 +29,7 @@ impl Default for GraspConfig {
       wait_time_weight: 1.0,
       rcl_size: 5,
       rcl_alpha: 0.3,
+      rcl_min_size: 2,
       moves_per_vehicle: 1,
       max_wait_time: 10000 as Time,
     }
@@ -237,6 +239,6 @@ impl Grasp {
   fn rcl_choose<'a>(&self, moves: &'a Vec<GraspRouteMove>) -> Option<&'a GraspRouteMove> {
     let costs: Vec<f64> = moves.iter().map(|m| m.cost).collect();
 
-    alpha_rcl_choose(moves, &costs, self.config.rcl_alpha)
+    alpha_rcl_choose(moves, &costs, self.config.rcl_alpha, self.config.rcl_min_size)
   }
 }

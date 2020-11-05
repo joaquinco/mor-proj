@@ -25,7 +25,9 @@ pub fn sized_rcl_choose<'a, T>(list: &'a Vec<T>, size: usize) -> Option<&'a T> {
 /// Returns an entry of the list assuming the entries that satisfy:
 /// c_min <= cost <= c_min + (c_max - c_min) * alpha
 #[allow(dead_code)]
-pub fn alpha_rcl_choose<'a, T>(list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64) -> Option<&'a T> {
+pub fn alpha_rcl_choose<'a, T: std::fmt::Debug>(
+  list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64, min_size: usize,
+) -> Option<&'a T> {
   let c_min: f64;
 
   match costs.first() {
@@ -53,6 +55,7 @@ pub fn alpha_rcl_choose<'a, T>(list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64) -
       max_index = index;
     }
   }
+  max_index = cmp::min(cmp::max(max_index, min_size), list.len());
 
   sized_rcl_choose(list, max_index)
 }

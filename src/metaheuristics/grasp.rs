@@ -2,10 +2,17 @@ use std::{cmp, collections::{HashSet, HashMap}};
 
 use serde::{Serialize, Deserialize};
 
-use crate::types::{Solution, ProblemInstance, RouteEntry, Time, Cost};
+use crate::types::{
+  Cost,
+  ProblemInstance,
+  RouteEntry,
+  RouteEntryClient,
+  Solution,
+  Time,
+};
 use super::utils::{
   alpha_rcl_choose,
-  time_max
+  time_max,
 };
 
 #[serde(default)]
@@ -53,7 +60,7 @@ struct GraspRoute {
   pub current_time: Time,
   pub route_time: Time,
   pub capacity_left: f64,
-  pub route: Vec<usize>,
+  pub route: Vec<RouteEntryClient>,
 }
 
 impl GraspRoute {
@@ -62,15 +69,23 @@ impl GraspRoute {
     let client_to = &problem.clients[target_client_id];
     let arc_time = problem.distances[from_id][target_client_id];
 
+    /* Calculate times */
+    let arrive_time = time_max(self.current_time + arc_time, client_to.earliest);
+    let wait_time = time_max(0 as Time, client_to.earliest - self.current_time - arc_time);
+    self.current_time = arrive_time;
+    self.current_time += client_to.service_time;
+
     /* Update route costs */
     self.current_client_id = target_client_id;
-    self.route.push(target_client_id);
     self.capacity_left -= client_to.demand;
     self.route_time += arc_time;
 
-    /* wait time is (if applies): client_to.earliest - current_time - arc_time */
-    self.current_time = time_max(self.current_time + arc_time, client_to.earliest);
-    self.current_time += client_to.service_time;
+    self.route.push(RouteEntryClient {
+      client_id: target_client_id,
+      arrive_time: arrive_time,
+      leave_time: self.current_time,
+      wait_time: wait_time,
+    });
   }
 }
 
@@ -143,16 +158,19 @@ impl Grasp {
   }
 
   fn build_grasp_routes(problem: &ProblemInstance) -> HashMap<usize, GraspRoute> {
-    problem.vehicles.iter().map( |vehicle|
-      (vehicle.id, GraspRoute {
+    problem.vehicles.iter().map(|vehicle| {
+      let mut grasp_route = GraspRoute {
         vehicle_id: vehicle.id,
         capacity_left: vehicle.capacity,
         current_time: problem.clients[problem.source].earliest,
         current_client_id: problem.source,
-        route: vec![problem.source],
         ..Default::default()
-      })
-    ).collect()
+      };
+
+      grasp_route.update(problem.source, problem);
+
+      (vehicle.id, grasp_route)
+    }).collect()
   }
 
   fn get_possible_moves(

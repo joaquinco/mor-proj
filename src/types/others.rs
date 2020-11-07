@@ -35,10 +35,18 @@ pub struct Client {
   pub pos: [f64; 2],
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize)]
+pub struct RouteEntryClient {
+  pub client_id: usize,
+  pub arrive_time: Time,
+  pub leave_time: Time,
+  pub wait_time: Time,
+}
+
+#[derive(Debug, Default, Serialize)]
 pub struct RouteEntry {
   pub vehicle_id: usize,
-  pub clients: Vec<usize>,
+  pub clients: Vec<RouteEntryClient>,
   pub route_time: Time,
   pub route_fixed_cost: Cost,
   pub route_variable_cost: Cost,
@@ -60,7 +68,7 @@ impl fmt::Display for RouteEntry {
       fixed cost: {}
       variable cost: {}",
       self.vehicle_id,
-      self.clients.iter().map(|client| client.to_string()).collect::<Vec<String>>().join(", "),
+      self.clients.iter().map(|client| client.client_id.to_string()).collect::<Vec<String>>().join(", "),
       self.route_time,
       self.route_fixed_cost,
       self.route_variable_cost,

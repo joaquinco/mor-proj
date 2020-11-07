@@ -1,9 +1,9 @@
 use std::fmt;
-use serde::{Serialize, Deserialize};
+use serde::{Serialize};
 
 use super::others::{RouteEntry, Cost, Time};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct Solution {
   pub routes: Vec<RouteEntry>,
   #[serde(skip_deserializing)]

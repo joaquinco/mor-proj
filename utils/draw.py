@@ -42,7 +42,7 @@ def draw_solution_to_figure(data):
 
   for route in routes:
     color = colors.pop()
-    clients = [clients_by_id[c] for c in route.get('clients')]
+    clients = [clients_by_id[c.get('client_id')] for c in route.get('clients')]
 
     vehicle_fixed_cost = vehicles_by_id[route.get('vehicle_id')].get('fixed_cost')
     draw_route(ax1, clients, 2, color)

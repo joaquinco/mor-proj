@@ -182,7 +182,6 @@ impl Grasp {
     let mut ret: Vec<GraspRouteMove> = vec![];
 
     for vroute in vehicle_routes.values() {
-
       /* Generate list of possible moves for each vehicle */
       let mut move_list = vec![];
       for client_id in available_clients {

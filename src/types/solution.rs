@@ -3,7 +3,7 @@ use serde::{Serialize};
 
 use super::others::{RouteEntry, Cost, Time};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Solution {
   pub routes: Vec<RouteEntry>,
   #[serde(skip_deserializing)]

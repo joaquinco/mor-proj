@@ -11,6 +11,7 @@ use clap::{Arg, App, ArgMatches};
 mod types;
 mod metaheuristics;
 mod runner;
+mod utils;
 
 use crate::types::{Config, Output};
 

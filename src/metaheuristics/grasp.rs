@@ -10,10 +10,9 @@ use crate::types::{
   Solution,
   Time,
 };
-use super::utils::{
-  alpha_rcl_choose,
-  time_max,
-};
+use crate::utils::time_max;
+use super::utils::alpha_rcl_choose;
+use super::opt2_search::opt2_search;
 
 #[serde(default)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,6 +25,7 @@ pub struct GraspConfig {
   rcl_min_size: usize,
   moves_per_vehicle: usize,
   max_wait_time: Time,
+  local_search_iterations: i32,
 }
 
 impl Default for GraspConfig {
@@ -39,6 +39,7 @@ impl Default for GraspConfig {
       rcl_min_size: 1,
       moves_per_vehicle: 1,
       max_wait_time: 10000 as Time,
+      local_search_iterations: 1000,
     }
   }
 }
@@ -65,27 +66,20 @@ struct GraspRoute {
 
 impl GraspRoute {
   pub fn update(&mut self, target_client_id: usize, problem: &ProblemInstance) {
-    let from_id = self.current_client_id;
     let client_to = &problem.clients[target_client_id];
-    let arc_time = problem.distances[from_id][target_client_id];
-
-    /* Calculate times */
-    let arrive_time = time_max(self.current_time + arc_time, client_to.earliest);
-    let wait_time = time_max(0 as Time, client_to.earliest - self.current_time - arc_time);
-    self.current_time = arrive_time;
-    self.current_time += client_to.service_time;
+    let arc_time = problem.distances[self.current_client_id][target_client_id];
 
     /* Update route costs */
     self.current_client_id = target_client_id;
     self.capacity_left -= client_to.demand;
     self.route_time += arc_time;
 
-    self.route.push(RouteEntryClient {
-      client_id: target_client_id,
-      arrive_time: arrive_time,
-      leave_time: self.current_time,
-      wait_time: wait_time,
-    });
+    let route_entry_client = problem.create_route_entry_client(
+      arc_time, target_client_id, self.current_time
+    );
+    self.current_time = route_entry_client.leave_time;
+
+    self.route.push(route_entry_client);
   }
 }
 
@@ -101,8 +95,48 @@ impl Grasp {
     }
   }
 
-  fn local_search(&self, sol: Solution, _problem: &ProblemInstance) -> Result<Solution, String> {
-    Ok(sol)
+  fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
+    for route1 in sol.routes.iter() {
+      for route2 in sol.routes.iter() {
+        if let Some((new_route1, new_route2)) = opt2_search(problem, route1, route2, true) {
+          let mut best_sol = sol.clone();
+
+          let mut new_routes = vec![];
+          for route in best_sol.routes {
+            new_routes.push({
+              if route.vehicle_id == route1.vehicle_id {
+                new_route1.clone()
+              } else if route.vehicle_id == route2.vehicle_id {
+                new_route2.clone()
+              } else {
+                route
+              }
+            })
+          }
+          best_sol.routes = new_routes;
+
+          return Some(best_sol);
+        }
+      }
+    }
+
+    None
+  }
+
+  fn local_search(&self, sol: Solution, problem: &ProblemInstance) -> Result<Solution, String> {
+    let mut best_sol = sol;
+
+    let mut iteration = self.config.local_search_iterations;
+
+    while iteration >= 0 {
+      if let Some(new_sol) = self.opt2_local_search(&best_sol, problem) {
+        best_sol = new_sol;
+      }
+
+      iteration -= 1;
+    }
+
+    Ok(best_sol)
   }
 
   fn build_solution(&self, problem: &ProblemInstance) -> Result<Solution, String> {
@@ -198,8 +232,11 @@ impl Grasp {
 
         arrival_time = time_max(arrival_time, client.earliest);
 
-        let max_overtime = ((client.latest - client.earliest) as f64 * problem.allowed_deviation) as Time;
-        let enough_time = arrival_time <= client.latest + max_overtime;
+        let enough_time = problem.is_move_feasible(
+          vroute.current_client_id,
+          client.id,
+          vroute.current_time,
+        );
 
         if !(enough_capacity && enough_time) {
           continue

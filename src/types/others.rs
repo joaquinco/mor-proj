@@ -43,7 +43,7 @@ pub struct RouteEntryClient {
   pub wait_time: Time,
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct RouteEntry {
   pub vehicle_id: usize,
   pub clients: Vec<RouteEntryClient>,

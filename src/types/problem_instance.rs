@@ -1,7 +1,8 @@
 use std::fmt;
 
 use serde::{Serialize, Deserialize};
-use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost};
+use crate::utils::time_max;
+use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost, RouteEntryClient};
 
 #[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
@@ -89,8 +90,37 @@ impl ProblemInstance {
 
     Ok(())
   }
+
+  ///
+  /// Creates a route entry from the following params:
+  /// - arc_time: Time to go to the client client_to_id.
+  /// - client_to_id: id of the route entry client.
+  /// - current_time: time of departure.
+  pub fn create_route_entry_client(&self, arc_time: Time, client_to_id: usize, current_time: Time) -> RouteEntryClient {
+    let client_to = &self.clients[client_to_id];
+    let arrive_time = time_max(current_time + arc_time, client_to.earliest);
+    let wait_time = time_max(0 as Time, client_to.earliest - current_time - arc_time);
+    let leave_time = arrive_time + client_to.service_time;
+
+    RouteEntryClient {
+      client_id: client_to_id,
+      arrive_time: arrive_time,
+      leave_time: leave_time,
+      wait_time: wait_time,
+    }
+  }
+
+  ///
+  /// Check if a move is feasible
+  pub fn is_move_feasible(&self, client_from_id: usize, client_to_id: usize, current_time: Time) -> bool {
+    let arrival_time = self.distances[client_from_id][client_to_id] + current_time;
+    let client = &self.clients[client_to_id];
+    
+    arrival_time < client.latest + self.allowed_deviation * (client.latest - client.earliest)
+  }
   
-  /* Objective calculation */
+  ///
+  /// Objective calculation
   pub fn evaluate_sol(&self, sol: &mut Solution) {
     let truck_cost = sol.routes.iter().map(|route| route.route_cost()).sum::<Cost>();
 

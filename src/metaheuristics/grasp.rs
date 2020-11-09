@@ -1,4 +1,5 @@
 use std::{cmp, collections::{HashSet, HashMap}};
+use std::iter::Iterator;
 
 use serde::{Serialize, Deserialize};
 
@@ -100,6 +101,10 @@ impl Grasp {
   fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
     for route1 in sol.routes.iter() {
       for route2 in sol.routes.iter() {
+        if route1.vehicle_id == route2.vehicle_id {
+          continue;
+        }
+
         let local_search_result = opt2_search(
           problem, route1, route2, self.config.local_search_first_improvement
         );
@@ -118,7 +123,7 @@ impl Grasp {
               }
             })
           }
-          best_sol.routes = new_routes;
+          best_sol.routes = new_routes.into_iter().filter(|r| r.route_cost() > 0 as Cost).collect();
           problem.evaluate_sol(&mut best_sol);
 
           return Some(best_sol);
@@ -131,7 +136,6 @@ impl Grasp {
 
   fn local_search(&self, sol: Solution, problem: &ProblemInstance) -> Result<Solution, String> {
     let mut best_sol = sol;
-    let sol_value = best_sol.value;
     let mut iteration = self.config.local_search_iters;
 
     while iteration >= 0 {
@@ -144,7 +148,6 @@ impl Grasp {
       }
     }
 
-    debug!("Local search improvement {:?}", sol_value - best_sol.value);
     Ok(best_sol)
   }
 

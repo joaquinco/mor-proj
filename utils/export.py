@@ -190,6 +190,7 @@ def export_file_to_config(filename):
           "moves_per_vehicle": 1,
           "rcl_alpha": 0.8,
           "rcl_min_size": 3,
+          "local_search_iters": 1000,
         }
       }))
 

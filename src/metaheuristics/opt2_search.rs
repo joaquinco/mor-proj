@@ -98,9 +98,15 @@ pub fn opt2_search(
   let mut ret: Option<(RouteEntry, RouteEntry)> = None;
 
   /* Checks if transformations c1->next(c2) c2->next(c1) are
-   feasible and computes the new solution cost if applies. */
-  for (index1, c1) in route1.clients[..route1.clients.len() - 1].iter().enumerate() {
-    for (index2, c2) in route2.clients[..route2.clients.len() - 1].iter().enumerate() {
+   * feasible and computes the new solution cost if applies.
+   * It assumes route are at least three clients length.
+   */
+  for (index1, c1) in route1.clients.iter().enumerate() {
+    for (index2, c2) in route2.clients.iter().enumerate() {
+      if c1.client_id == problem.source || c2.client_id == problem.source {
+        continue
+      }
+
       let next_c1 = &route1.clients[index1 + 1];
       let next_c2 = &route2.clients[index2 + 1];
 

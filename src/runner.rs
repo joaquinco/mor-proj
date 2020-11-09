@@ -13,7 +13,7 @@ fn do_run(thread_id: i32, config: &Config) -> Option<Solution> {
   while iteration != 0 {
     iteration -= 1;
 
-    let mut sol = match mh.iterate(&config.instance) {
+    let sol = match mh.iterate(&config.instance) {
       Err(error) => {
         last_error = error;
         error_count += 1;
@@ -21,8 +21,6 @@ fn do_run(thread_id: i32, config: &Config) -> Option<Solution> {
       },
       Ok(value) => value,
     };
-
-    config.instance.evaluate_sol(&mut sol);
 
     match best.as_ref() {
       None => best = Some(sol),

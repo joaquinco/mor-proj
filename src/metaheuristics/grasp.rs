@@ -25,7 +25,8 @@ pub struct GraspConfig {
   rcl_min_size: usize,
   moves_per_vehicle: usize,
   max_wait_time: Time,
-  local_search_iterations: i32,
+  local_search_iters: i32,
+  local_search_first_improvement: bool,
 }
 
 impl Default for GraspConfig {
@@ -39,7 +40,8 @@ impl Default for GraspConfig {
       rcl_min_size: 1,
       moves_per_vehicle: 1,
       max_wait_time: 10000 as Time,
-      local_search_iterations: 1000,
+      local_search_iters: 100,
+      local_search_first_improvement: true,
     }
   }
 }
@@ -98,10 +100,13 @@ impl Grasp {
   fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
     for route1 in sol.routes.iter() {
       for route2 in sol.routes.iter() {
-        if let Some((new_route1, new_route2)) = opt2_search(problem, route1, route2, false) {
+        let local_search_result = opt2_search(
+          problem, route1, route2, self.config.local_search_first_improvement
+        );
+        if let Some((new_route1, new_route2)) = local_search_result {
           let mut best_sol = sol.clone();
-
           let mut new_routes = vec![];
+
           for route in best_sol.routes {
             new_routes.push({
               if route.vehicle_id == route1.vehicle_id {
@@ -114,6 +119,7 @@ impl Grasp {
             })
           }
           best_sol.routes = new_routes;
+          problem.evaluate_sol(&mut best_sol);
 
           return Some(best_sol);
         }
@@ -125,17 +131,20 @@ impl Grasp {
 
   fn local_search(&self, sol: Solution, problem: &ProblemInstance) -> Result<Solution, String> {
     let mut best_sol = sol;
-
-    let mut iteration = self.config.local_search_iterations;
+    let sol_value = best_sol.value;
+    let mut iteration = self.config.local_search_iters;
 
     while iteration >= 0 {
+      iteration -= 1;
+
       if let Some(new_sol) = self.opt2_local_search(&best_sol, problem) {
         best_sol = new_sol;
+      } else {
+        break
       }
-
-      iteration -= 1;
     }
 
+    debug!("Local search improvement {:?}", sol_value - best_sol.value);
     Ok(best_sol)
   }
 
@@ -188,6 +197,7 @@ impl Grasp {
       });
     }
 
+    problem.evaluate_sol(&mut sol);
     Ok(sol)
   }
 

@@ -99,8 +99,8 @@ pub fn opt2_search(
 
   /* Checks if transformations c1->next(c2) c2->next(c1) are
    feasible and computes the new solution cost if applies. */
-  for (index1, c1) in route1.clients[..route1.clients.len()].iter().enumerate() {
-    for (index2, c2) in route2.clients[..route2.clients.len()].iter().enumerate() {
+  for (index1, c1) in route1.clients[..route1.clients.len() - 1].iter().enumerate() {
+    for (index2, c2) in route2.clients[..route2.clients.len() - 1].iter().enumerate() {
       let next_c1 = &route1.clients[index1 + 1];
       let next_c2 = &route2.clients[index2 + 1];
 
@@ -126,7 +126,7 @@ pub fn opt2_search(
         ret = Some((new_route1, new_route2));
       }
 
-      if first_improvement {
+      if ret.is_some() && first_improvement {
         return ret;
       }
     }

@@ -98,7 +98,7 @@ impl Grasp {
   fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
     for route1 in sol.routes.iter() {
       for route2 in sol.routes.iter() {
-        if let Some((new_route1, new_route2)) = opt2_search(problem, route1, route2, true) {
+        if let Some((new_route1, new_route2)) = opt2_search(problem, route1, route2, false) {
           let mut best_sol = sol.clone();
 
           let mut new_routes = vec![];

@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::{Serialize, Deserialize};
 use crate::utils::time_max;
-use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost, RouteEntryClient};
+use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost, RouteEntry, RouteEntryClient};
 
 #[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
@@ -107,6 +107,26 @@ impl ProblemInstance {
       arrive_time: arrive_time,
       leave_time: leave_time,
       wait_time: wait_time,
+    }
+  }
+
+  pub fn compute_route_costs(&self, route: &mut RouteEntry) {
+    let vehicle = &self.vehicles[route.vehicle_id];
+
+    route.route_variable_cost = 0 as Cost;
+    route.route_fixed_cost = 0 as Cost;
+
+    if route.clients.is_empty() {
+      return
+    }
+
+    route.route_fixed_cost = vehicle.fixed_cost;
+
+    let mut prev_client_id = route.clients.first().unwrap().client_id;
+    for route_client in route.clients.iter() {
+      let arc_time = self.distances[prev_client_id][route_client.client_id];
+      route.route_variable_cost += arc_time * vehicle.variable_cost;
+      prev_client_id = route_client.client_id;
     }
   }
 

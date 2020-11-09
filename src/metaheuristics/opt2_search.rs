@@ -64,6 +64,8 @@ fn replace_subroute(
     prev_client_id = client_id;
     route.clients.push(new_route_client);
   }
+
+  problem.compute_route_costs(route);
 }
 
 ///
@@ -118,8 +120,11 @@ pub fn opt2_search(
       if !exchange_feasible {
         continue;
       }
+      let (new_route1, new_route2) = exchange_subroutes(problem, route1, route2, index1, index2);
 
-      ret = Some(exchange_subroutes(problem, route1, route2, index1, index2));
+      if new_route1.route_cost() + new_route2.route_cost() < route1.route_cost() + route2.route_cost() {
+        ret = Some((new_route1, new_route2));
+      }
 
       if first_improvement {
         return ret;

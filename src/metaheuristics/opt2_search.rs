@@ -3,29 +3,29 @@ use crate::types::{ProblemInstance, RouteEntry, Time};
 use crate::utils::time_max;
 
 ///
-/// Check if a subroute can be inserted within a route at client_index arriving at that
-/// client at new_arrival_time.
+/// Check if the subroute starting from client_index is feasable considering the new_arrival_time
+/// and available_capacity.
 fn is_subroute_feasible(
   problem:&ProblemInstance,
   route: &RouteEntry,
   client_index: usize,
-  new_arrival_time: Time
+  new_arrival_time: Time,
+  available_capacity: f64,
 ) -> bool {
   let mut current_time = new_arrival_time;
   let mut prev_client_id = route.clients[client_index].client_id;
-  let mut curr_demand: f64 = route.clients[..=client_index]
-                         .iter()
-                         .map(|route| problem.clients[route.client_id].demand).sum();
+  let subroute_demand: f64 = route.clients[client_index..]
+                        .iter()
+                        .map(|rc| problem.clients[rc.client_id].demand)
+                        .sum();
   let vehicle = &problem.vehicles[route.vehicle_id];
+  if subroute_demand + available_capacity > vehicle.capacity {
+    return false;
+  }
 
   for client_route in route.clients[client_index + 1..].iter() {
     let client_id = client_route.client_id;
     let client = &problem.clients[client_id];
-    curr_demand += client.demand;
-
-    if curr_demand > vehicle.capacity {
-      return false
-    }
 
     if !problem.is_move_feasible(prev_client_id, client_id, current_time) {
       return false
@@ -96,6 +96,15 @@ fn exchange_subroutes(
 }
 
 ///
+/// Return the demand of a subsequence of clients of a route.
+fn get_subroute_demand(problem: &ProblemInstance, route: &RouteEntry, index: usize) -> f64 {
+  route.clients[..=index]
+    .iter()
+    .map(|rc| problem.clients[rc.client_id].demand)
+    .sum()
+}
+
+///
 /// Performs the pseudo 2-OPT local search:
 /// Searches for clients with similar time on each route and exchange the route from that point on.
 pub fn opt2_search(
@@ -119,23 +128,26 @@ pub fn opt2_search(
       let next_c1 = &route1.clients[index1 + 1];
       let next_c2 = &route2.clients[index2 + 1];
 
-      let arrival_next_c1 = problem.distances[c2.client_id][next_c1.client_id] + c2.leave_time;
-      let arrival_next_c2 = problem.distances[c1.client_id][next_c2.client_id] + c1.leave_time;
+      let arrival_new_next_c2 = problem.distances[c2.client_id][next_c1.client_id] + c2.leave_time;
+      let arrival_new_next_c1 = problem.distances[c1.client_id][next_c2.client_id] + c1.leave_time;
+
+      let subroute1_demand = get_subroute_demand(problem, route1, index1);
+      let subroute2_demand = get_subroute_demand(problem, route2, index2);
 
       let exchange_feasible = {
         problem.is_move_feasible(c1.client_id, next_c2.client_id, c1.leave_time)
         &&
         problem.is_move_feasible(c2.client_id, next_c1.client_id, c2.leave_time)
         &&
-        is_subroute_feasible(problem, &route1, index1 + 1, arrival_next_c1)
+        is_subroute_feasible(problem, route1, index1 + 1, arrival_new_next_c2, subroute2_demand)
         &&
-        is_subroute_feasible(problem, &route2, index2 + 1, arrival_next_c2)
+        is_subroute_feasible(problem, route2, index2 + 1, arrival_new_next_c1, subroute1_demand)
       };
 
       if !exchange_feasible {
         continue;
       }
-      let (new_route1, new_route2) = exchange_subroutes(problem, route1, route2, index1, index2);
+      let (new_route1, new_route2) = exchange_subroutes(problem, route1, route2, index1 + 1, index2 + 1);
 
       if new_route1.route_cost() + new_route2.route_cost() < route1.route_cost() + route2.route_cost() {
         ret = Some((new_route1, new_route2));

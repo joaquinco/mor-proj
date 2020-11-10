@@ -48,7 +48,7 @@ def validate_solution(data):
     current_time = 0
 
     route_errors = Errors(f'Vehicle {vehicle_id}')
-    for c1, c2 in zip(route_clients[1:], route_clients[:-1]):
+    for c1, c2 in zip(route_clients[:-1], route_clients[1:]):
       client2 = clients.get(c2.get('client_id'))
       arc_time = distances[c1.get('client_id')][c2.get('client_id')]
       current_time = max(client2.get('earliest'), arc_time + current_time)

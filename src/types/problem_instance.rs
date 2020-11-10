@@ -116,6 +116,7 @@ impl ProblemInstance {
     route.route_variable_cost = 0 as Cost;
     route.route_fixed_cost = 0 as Cost;
     route.route_time = 0 as Time;
+    route.demand = 0.0;
 
     if route.clients.is_empty() {
       return
@@ -127,6 +128,7 @@ impl ProblemInstance {
     for route_client in route.clients.iter() {
       let arc_time = self.distances[prev_client_id][route_client.client_id];
 
+      route.demand += self.clients[route_client.client_id].demand;
       route.route_time += arc_time;
       route.route_variable_cost += arc_time * vehicle.variable_cost;
       prev_client_id = route_client.client_id;

@@ -13,10 +13,19 @@ fn is_subroute_feasible(
 ) -> bool {
   let mut current_time = new_arrival_time;
   let mut prev_client_id = route.clients[client_index].client_id;
+  let mut curr_demand: f64 = route.clients[..=client_index]
+                         .iter()
+                         .map(|route| problem.clients[route.client_id].demand).sum();
+  let vehicle = &problem.vehicles[route.vehicle_id];
 
   for client_route in route.clients[client_index + 1..].iter() {
     let client_id = client_route.client_id;
     let client = &problem.clients[client_id];
+    curr_demand += client.demand;
+
+    if curr_demand > vehicle.capacity {
+      return false
+    }
 
     if !problem.is_move_feasible(prev_client_id, client_id, current_time) {
       return false

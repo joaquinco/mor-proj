@@ -40,7 +40,7 @@ pub struct RouteEntryClient {
   pub client_id: usize,
   pub arrive_time: Time,
   pub leave_time: Time,
-  pub wait_time: Time,
+  pub wait_time: Time
 }
 
 #[derive(Debug, Default, Clone, Serialize)]
@@ -50,6 +50,7 @@ pub struct RouteEntry {
   pub route_time: Time,
   pub route_fixed_cost: Cost,
   pub route_variable_cost: Cost,
+  pub demand: f64,
 }
 
 impl RouteEntry {
@@ -64,11 +65,13 @@ impl fmt::Display for RouteEntry {
       f,
 "    - vehicle_id: {}
       route: {}
+      demand: {}
       route time: {}
       fixed cost: {}
       variable cost: {}",
       self.vehicle_id,
       self.clients.iter().map(|client| client.client_id.to_string()).collect::<Vec<String>>().join(", "),
+      self.demand,
       self.route_time,
       self.route_fixed_cost,
       self.route_variable_cost,

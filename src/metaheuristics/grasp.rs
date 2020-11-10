@@ -197,6 +197,7 @@ impl Grasp {
         route_fixed_cost: vehicle.fixed_cost,
         route_time: vroute.route_time,
         route_variable_cost: vroute.route_time as f64 * vehicle.variable_cost,
+        demand: vehicle.capacity - vroute.capacity_left,
       });
     }
 

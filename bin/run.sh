@@ -2,6 +2,7 @@
 
 convert="python utils/export.py"
 drawsolution="python utils/draw.py"
+validate="python utils/validate.py"
 
 if [ -n "$HEURISTIC_RUN" ]; then
   runheuristic=$HEURISTIC_RUN
@@ -30,6 +31,7 @@ execute_staff() {
   fi
 
   $drawsolution $solution
+  $validate $solution
 }
 
 

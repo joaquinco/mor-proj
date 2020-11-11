@@ -12,8 +12,6 @@ fn is_subroute_feasible(
   new_arrival_time: Time,
   available_capacity: f64,
 ) -> bool {
-  let mut current_time = new_arrival_time;
-  let mut prev_client_id = route.clients[client_index].client_id;
   let subroute_demand: f64 = route.clients[client_index..]
                         .iter()
                         .map(|rc| problem.clients[rc.client_id].demand)
@@ -22,6 +20,9 @@ fn is_subroute_feasible(
   if subroute_demand + available_capacity > vehicle.capacity {
     return false;
   }
+
+  let mut prev_client_id = route.clients[client_index].client_id;
+  let mut current_time = new_arrival_time + problem.clients[prev_client_id].service_time;
 
   for client_route in route.clients[client_index + 1..].iter() {
     let client_id = client_route.client_id;
@@ -131,17 +132,17 @@ pub fn opt2_search(
       let arrival_new_next_c2 = problem.distances[c2.client_id][next_c1.client_id] + c2.leave_time;
       let arrival_new_next_c1 = problem.distances[c1.client_id][next_c2.client_id] + c1.leave_time;
 
-      let subroute1_demand = get_subroute_demand(problem, route1, index1);
-      let subroute2_demand = get_subroute_demand(problem, route2, index2);
+      let prev_subroute1_demand = get_subroute_demand(problem, route1, index1);
+      let prev_subroute2_demand = get_subroute_demand(problem, route2, index2);
 
       let exchange_feasible = {
         problem.is_move_feasible(c1.client_id, next_c2.client_id, c1.leave_time)
         &&
         problem.is_move_feasible(c2.client_id, next_c1.client_id, c2.leave_time)
         &&
-        is_subroute_feasible(problem, route1, index1 + 1, arrival_new_next_c2, subroute2_demand)
+        is_subroute_feasible(problem, route1, index1 + 1, arrival_new_next_c2, prev_subroute2_demand)
         &&
-        is_subroute_feasible(problem, route2, index2 + 1, arrival_new_next_c1, subroute1_demand)
+        is_subroute_feasible(problem, route2, index2 + 1, arrival_new_next_c1, prev_subroute1_demand)
       };
 
       if !exchange_feasible {

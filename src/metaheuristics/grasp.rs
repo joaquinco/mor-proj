@@ -99,6 +99,8 @@ impl Grasp {
   }
 
   fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
+    let mut best_sol: Option<Solution> = None;
+
     for route1 in sol.routes.iter() {
       for route2 in sol.routes.iter() {
         if route1.vehicle_id == route2.vehicle_id {
@@ -106,13 +108,13 @@ impl Grasp {
         }
 
         let local_search_result = opt2_search(
-          problem, route1, route2, self.config.local_search_first_improvement
+          problem, route1, route2, true
         );
         if let Some((new_route1, new_route2)) = local_search_result {
-          let mut best_sol = sol.clone();
+          let mut new_sol = sol.clone();
           let mut new_routes = vec![];
 
-          for route in best_sol.routes {
+          for route in new_sol.routes {
             new_routes.push({
               if route.vehicle_id == route1.vehicle_id {
                 new_route1.clone()
@@ -123,15 +125,21 @@ impl Grasp {
               }
             })
           }
-          best_sol.routes = new_routes.into_iter().filter(|r| r.route_cost() > 0 as Cost).collect();
-          problem.evaluate_sol(&mut best_sol);
+          new_sol.routes = new_routes.into_iter().filter(|r| r.route_cost() > 0 as Cost).collect();
+          problem.evaluate_sol(&mut new_sol);
 
-          return Some(best_sol);
+          if best_sol.is_none() || new_sol.value < best_sol.as_ref().unwrap().value {
+            best_sol = Some(new_sol);
+          }
+
+          if self.config.local_search_first_improvement {
+            return best_sol;
+          }
         }
       }
     }
 
-    None
+    best_sol
   }
 
   fn local_search(&self, sol: Solution, problem: &ProblemInstance) -> Result<Solution, String> {

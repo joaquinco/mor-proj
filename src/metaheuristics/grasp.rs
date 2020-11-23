@@ -28,6 +28,7 @@ pub struct GraspConfig {
   max_wait_time: Time,
   local_search_iters: i32,
   local_search_first_improvement: bool,
+  opt2_search_first_improvement: bool,
 }
 
 impl Default for GraspConfig {
@@ -43,6 +44,7 @@ impl Default for GraspConfig {
       max_wait_time: 10000 as Time,
       local_search_iters: 100,
       local_search_first_improvement: true,
+      opt2_search_first_improvement: false,
     }
   }
 }
@@ -108,7 +110,7 @@ impl Grasp {
         }
 
         let local_search_result = opt2_search(
-          problem, route1, route2, true
+          problem, route1, route2, self.config.opt2_search_first_improvement
         );
         if let Some((new_route1, new_route2)) = local_search_result {
           let mut new_sol = sol.clone();

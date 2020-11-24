@@ -8,6 +8,7 @@ pub struct Solution {
   pub routes: Vec<RouteEntry>,
   #[serde(skip_deserializing)]
   pub value: Cost,
+  pub iter_found: i32,
 }
 
 impl Default for Solution {
@@ -15,6 +16,7 @@ impl Default for Solution {
     Solution {
       routes: vec![],
       value: (1 << 31) as Cost,
+      iter_found: 0,
     }
   }
 }
@@ -26,9 +28,11 @@ impl fmt::Display for Solution {
 "Solution:
   value: {}
   distance: {}
+  found at iter: {}
   routes:\n{}",
       self.value,
       self.total_route_time(),
+      self.iter_found,
       self.routes.iter().map(|route| format!("{}", route)).collect::<Vec<String>>().join("\n")
     )
   }

@@ -19,8 +19,12 @@ fn do_run(thread_id: i32, config: &Config) -> Option<Solution> {
         error_count += 1;
         continue;
       },
-      Ok(value) => value,
+      Ok(mut value) => {
+        value.iter_found = iteration;
+        value
+      },
     };
+
 
     match best.as_ref() {
       None => best = Some(sol),

@@ -12,7 +12,9 @@ use crate::types::{
   Time,
 };
 use crate::utils::time_max;
-use super::utils::alpha_rcl_choose;
+use super::utils::{alpha_rcl_choose, transform_solution};
+use super::local_search::{LocalSearch, LocalSearchNotFound};
+use super::insertion_search::insertion_search;
 use super::opt2_search::opt2_search;
 
 #[serde(default)]
@@ -29,6 +31,8 @@ pub struct GraspConfig {
   local_search_iters: i32,
   local_search_first_improvement: bool,
   opt2_search_first_improvement: bool,
+  insertion_search_first_improvement: bool,
+  insertion_search_sequence_length: usize,
 }
 
 impl Default for GraspConfig {
@@ -45,6 +49,8 @@ impl Default for GraspConfig {
       local_search_iters: 100,
       local_search_first_improvement: true,
       opt2_search_first_improvement: false,
+      insertion_search_first_improvement: true,
+      insertion_search_sequence_length: 1,
     }
   }
 }
@@ -100,53 +106,61 @@ impl Grasp {
     }
   }
 
-  fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
-    let mut best_sol: Option<Solution> = None;
+  fn insertion_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
+    let ls = LocalSearch::new(self.config.local_search_first_improvement);
 
-    for route1 in sol.routes.iter() {
-      for route2 in sol.routes.iter() {
-        if route1.vehicle_id == route2.vehicle_id {
-          continue;
-        }
-
-        let local_search_result = opt2_search(
-          problem, route1, route2, self.config.opt2_search_first_improvement
-        );
-        if let Some((new_route1, new_route2)) = local_search_result {
-          let mut new_sol = sol.clone();
-          let mut new_routes = vec![];
-
-          for route in new_sol.routes {
-            new_routes.push({
-              if route.vehicle_id == route1.vehicle_id {
-                new_route1.clone()
-              } else if route.vehicle_id == route2.vehicle_id {
-                new_route2.clone()
-              } else {
-                route
-              }
-            })
-          }
-          new_sol.routes = new_routes.into_iter().filter(|r| r.route_cost() > 0 as Cost).collect();
-          problem.evaluate_sol(&mut new_sol);
-
-          if best_sol.is_none() || new_sol.value < best_sol.as_ref().unwrap().value {
-            best_sol = Some(new_sol);
-          }
-
-          if self.config.local_search_first_improvement {
-            return best_sol;
-          }
-        }
+    ls.iterate(&sol.routes, &sol.routes, |_index1, route1, _index2, route2| {
+      if route1.vehicle_id == route2.vehicle_id {
+        return Err(LocalSearchNotFound);
       }
-    }
 
-    best_sol
+      let local_search_result = insertion_search(
+        problem,
+        route1,
+        route2,
+        self.config.insertion_search_sequence_length,
+        self.config.insertion_search_first_improvement
+      );
+
+      if let Some((new_route1, new_route2)) = local_search_result {
+        let mut new_sol = transform_solution(sol, &new_route1, &new_route2);
+        problem.evaluate_sol(&mut new_sol);
+        let ret_val = new_sol.value;
+
+        Ok((new_sol, ret_val))
+      } else {
+        Err(LocalSearchNotFound)
+      }
+    })
+  }
+
+  fn opt2_local_search(&self, sol: &Solution, problem: &ProblemInstance) -> Option<Solution> {
+    let ls = LocalSearch::new(self.config.local_search_first_improvement);
+
+    ls.iterate(&sol.routes, &sol.routes, |_index1, route1, _index2, route2| {
+      if route1.vehicle_id == route2.vehicle_id {
+        return Err(LocalSearchNotFound)
+      }
+
+      let local_search_result = opt2_search(
+        problem, route1, route2, self.config.opt2_search_first_improvement
+      );
+      if let Some((new_route1, new_route2)) = local_search_result {
+        let mut new_sol = transform_solution(sol, &new_route1, &new_route2);
+        problem.evaluate_sol(&mut new_sol);
+        let value = new_sol.value;
+  
+        Ok((new_sol, value))
+      } else {
+        Err(LocalSearchNotFound)
+      }
+    })
   }
 
   fn local_search(&self, sol: Solution, problem: &ProblemInstance) -> Result<Solution, String> {
     let mut best_sol = sol;
     let mut iteration = self.config.local_search_iters;
+    let mut should_break = false;
 
     while iteration >= 0 {
       iteration -= 1;
@@ -154,6 +168,15 @@ impl Grasp {
       if let Some(new_sol) = self.opt2_local_search(&best_sol, problem) {
         best_sol = new_sol;
       } else {
+        should_break = true;
+      }
+      if let Some(new_sol) = self.insertion_local_search(&best_sol, problem) {
+        best_sol = new_sol
+      } else {
+        should_break = true;
+      }
+
+      if should_break {
         break
       }
     }

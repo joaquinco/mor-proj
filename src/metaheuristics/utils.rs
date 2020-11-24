@@ -3,6 +3,8 @@ use std::cmp;
 use rand;
 use rand::seq::SliceRandom;
 
+use crate::types::{Cost, Solution, RouteEntry};
+
 /// Assumes the list is sorted
 /// Returns an entry of the list from the first 0..size elements
 #[allow(dead_code)]
@@ -68,4 +70,27 @@ pub fn weighted_choose<'a, T>(list: &'a Vec<T>, weights: Vec<f64>) -> Option<&'a
     Err(_) => None,
     Ok((_, value)) => Some(value),
   }
+}
+
+
+///
+/// Creates a new solution by replacing the two routes
+pub fn transform_solution(sol: &Solution, new_route1: &RouteEntry, new_route2: &RouteEntry) -> Solution {
+  let mut new_sol = sol.clone();
+  let mut new_routes = vec![];
+
+  for route in new_sol.routes {
+    new_routes.push({
+      if route.vehicle_id == new_route1.vehicle_id {
+        new_route1.clone()
+      } else if route.vehicle_id == new_route2.vehicle_id {
+        new_route2.clone()
+      } else {
+        route
+      }
+    })
+  }
+  new_sol.routes = new_routes.into_iter().filter(|r| r.route_cost() > 0 as Cost).collect();
+
+  new_sol
 }

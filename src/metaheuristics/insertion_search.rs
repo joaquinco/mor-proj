@@ -76,16 +76,18 @@ fn try_insert_nodes(
   let moved_clients_ids: HashSet<usize> = clients_to_insert.iter().map(|c| c.client_id).collect();
 
   /* Creates a new route2 from the clients left */
-  let mut client_from = route2.clients.first().unwrap();
-  let mut current_time = client_from.arrive_time;
+  let client_from = route2.clients.first().unwrap();
+  let mut client_from_id = client_from.client_id;
+  let mut current_time = client_from.leave_time;
   for route_client in route2.clients.iter() {
     if !moved_clients_ids.contains(&route_client.client_id) {
-      let arc_time = problem.distances[client_from.client_id][route_client.client_id];
-      new_route2.clients.push(
-        problem.create_route_entry_client(arc_time, route_client.client_id, current_time)
+      let arc_time = problem.distances[client_from_id][route_client.client_id];
+      let new_client = problem.create_route_entry_client(
+        arc_time, route_client.client_id, current_time
       );
-      client_from = route_client;
-      current_time = route_client.leave_time;
+      current_time = new_client.leave_time;
+      client_from_id = new_client.client_id;
+      new_route2.clients.push(new_client);
     }
   }
 

@@ -166,7 +166,7 @@ impl Grasp {
     let mut iteration = self.config.local_search_iters;
     let mut should_break = false;
 
-    while iteration >= 0 {
+    while iteration > 0 {
       iteration -= 1;
 
       if self.config.opt2_search_enabled {

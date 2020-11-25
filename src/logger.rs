@@ -1,9 +1,24 @@
+use chrono::{DateTime, Local};
 
 pub mod level {
   pub static DEBUG: i32 = 0;
   pub static INFO: i32 = 1;
-  pub static ERROR: i32 = 2; 
+  pub static ERROR: i32 = 2;
+
+  pub fn level_name(level: i32) -> &'static str {
+    if level == DEBUG {
+      "DEBUG"
+    } else if level == INFO {
+      "INFO"
+    } else if level == ERROR {
+      "ERROR"
+    } else {
+      "UNKOWN"
+    }
+  }
 }
+
+
 
 pub static mut LOG_LEVEL: i32 = level::INFO;
 
@@ -41,7 +56,9 @@ fn log(message: String, level: i32) {
     }
   }
 
-  println!("{}", message);
+  let now: DateTime<Local> = Local::now();
+  let level_name = level::level_name(level);
+  println!("{} | {} | {}", now, level_name, message);
 }
 
 #[macro_export]

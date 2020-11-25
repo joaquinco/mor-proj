@@ -30,7 +30,9 @@ pub struct GraspConfig {
   max_wait_time: Time,
   local_search_iters: i32,
   local_search_first_improvement: bool,
+  opt2_search_enabled: bool,
   opt2_search_first_improvement: bool,
+  insertion_search_enabled: bool,
   insertion_search_first_improvement: bool,
   insertion_search_sequence_length: usize,
 }
@@ -48,7 +50,9 @@ impl Default for GraspConfig {
       max_wait_time: 10000 as Time,
       local_search_iters: 100,
       local_search_first_improvement: true,
+      opt2_search_enabled: true,
       opt2_search_first_improvement: false,
+      insertion_search_enabled: true,
       insertion_search_first_improvement: true,
       insertion_search_sequence_length: 1,
     }
@@ -165,15 +169,20 @@ impl Grasp {
     while iteration >= 0 {
       iteration -= 1;
 
-      if let Some(new_sol) = self.opt2_local_search(&best_sol, problem) {
-        best_sol = new_sol;
-      } else {
-        should_break = true;
+      if self.config.opt2_search_enabled {
+        if let Some(new_sol) = self.opt2_local_search(&best_sol, problem) {
+          best_sol = new_sol;
+        } else {
+          should_break = true;
+        }
       }
-      if let Some(new_sol) = self.insertion_local_search(&best_sol, problem) {
-        best_sol = new_sol
-      } else {
-        should_break = true;
+
+      if self.config.insertion_search_enabled {
+        if let Some(new_sol) = self.insertion_local_search(&best_sol, problem) {
+          best_sol = new_sol
+        } else {
+          should_break = true;
+        }
       }
 
       if should_break {

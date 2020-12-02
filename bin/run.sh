@@ -10,6 +10,12 @@ else
   runheuristic="./target/release/mor-proj"
 fi
 
+if [ -n "$HEURISTIC_CONFIG" ]; then
+  config="-c $HEURISTIC_CONFIG"
+else
+  config=""
+fi
+
 execute_staff() {
   file=$1
   filebase=${file%%.*}
@@ -20,7 +26,7 @@ execute_staff() {
   fi
 
   solution=${filebase}_out.json
-  $runheuristic $file -o $solution
+  $runheuristic $file -o $solution $config
 
   if [ $? -ne 0 ]; then
     return

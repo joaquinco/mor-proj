@@ -7,6 +7,7 @@ use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost, RouteEntry
 #[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProblemInstance {
+  pub name: String,
   pub source: usize,
   pub deviation_penalty: f64,
   pub allowed_deviation: f64,
@@ -22,6 +23,7 @@ pub struct ProblemInstance {
 impl Default for ProblemInstance {
   fn default() -> ProblemInstance {
     ProblemInstance {
+      name: String::from("Unnamed instance"),
       source: 0,
       deviation_penalty: 0.0,
       allowed_deviation: 0.0,
@@ -158,9 +160,11 @@ impl fmt::Display for ProblemInstance {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
-      "  vehicles: {}
+      "  name: {}
+  vehicles: {}
   nodes: {}
   allowed excess: {}",
+      self.name,
       self.vehicles.len(),
       self.clients.len(),
       self.allowed_deviation,

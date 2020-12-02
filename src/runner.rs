@@ -1,9 +1,9 @@
 use crossbeam;
 
-use crate::types::{Config, Solution};
+use crate::types::{Config, ProblemInstance, Solution};
 use crate::metaheuristics::Grasp;
 
-fn do_run(thread_id: i32, config: &Config) -> Option<Solution> {
+fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option<Solution> {
   let mut iteration = config.iters;
   let mut best: Option<Solution> = None;
   let mh: Grasp = Grasp { config: config.grasp_config.clone() };
@@ -13,7 +13,7 @@ fn do_run(thread_id: i32, config: &Config) -> Option<Solution> {
   while iteration != 0 {
     iteration -= 1;
 
-    let sol = match mh.iterate(&config.instance) {
+    let sol = match mh.iterate(&instance) {
       Err(error) => {
         last_error = error;
         error_count += 1;
@@ -49,8 +49,8 @@ fn do_run(thread_id: i32, config: &Config) -> Option<Solution> {
   best
 }
 
-pub fn run(config: &Config) -> Option<Solution> {
-  info!("Using configuration:\n{}", config);
+pub fn run(config: &Config, instance: &ProblemInstance) -> Option<Solution> {
+  info!("Using configuration:\n{}\nInstance{}\n", config, instance);
 
   let mut results = vec![];
 
@@ -58,7 +58,7 @@ pub fn run(config: &Config) -> Option<Solution> {
     let mut handlers = vec![];
 
     for index in 0..config.number_of_threads {
-      let handle = s.spawn(move |_| do_run(index + 1, config));
+      let handle = s.spawn(move |_| do_run(index + 1, config, instance));
       handlers.push(handle);
     }
 

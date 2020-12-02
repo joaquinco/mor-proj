@@ -6,8 +6,8 @@ use super::others::{RouteEntry, Cost, Time};
 #[derive(Debug, Clone, Serialize)]
 pub struct Solution {
   pub routes: Vec<RouteEntry>,
-  #[serde(skip_deserializing)]
   pub value: Cost,
+  pub distance: Time,
   pub iter_found: i32,
 }
 
@@ -15,6 +15,7 @@ impl Default for Solution {
   fn default() -> Solution {
     Solution {
       routes: vec![],
+      distance: 0 as Time,
       value: (1 << 31) as Cost,
       iter_found: 0,
     }
@@ -31,7 +32,7 @@ impl fmt::Display for Solution {
   found at iter: {}
   routes:\n{}",
       self.value,
-      self.total_route_time(),
+      self.distance,
       self.iter_found,
       self.routes.iter().map(|route| format!("{}", route)).collect::<Vec<String>>().join("\n")
     )

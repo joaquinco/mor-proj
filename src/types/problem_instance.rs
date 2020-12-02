@@ -150,6 +150,7 @@ impl ProblemInstance {
     let truck_cost = sol.routes.iter().map(|route| route.route_cost()).sum::<Cost>();
 
     sol.value = truck_cost;
+    sol.distance = sol.total_route_time();
   }
 }
 

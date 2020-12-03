@@ -35,7 +35,7 @@
 
   \subsection*{Representación}
 
-  La representación del problema en computadora es sencilla, se requiere:
+  Para la representación del problema en computadora se requiere:
   
   \begin{itemize}
     \item Una matriz de distancia entre clientes $t_{ij}$. La distancia está expresada en unidades de tiempo.
@@ -43,7 +43,7 @@
     \item Una lista de clientes. Cada cliente $i$ cada uno con una demanda $d_i$, un tiempo de servicio $s_i$ y un rango de tiempo $e_i, l_i$ que representan el tiempo mínimo y máximo en que puede llegar un vehículo.
     \item Un nodo origen, desde el que salen y llegan los vehículos. Se modela como un cliente con demanda 0.
     \item Un porcentaje de flexibilidad de la ventana de tiempo de los clinetes $w$. Es decir un valor que permite que el arribo a un cliente $i$en cualquier momento dentro de $[e_i, l_i + (l_i - e_i)w]$ sea factible.
-    \item Un parámetro $\rho$ de penalización del arribo a los clientes luego del valor $l_i$.
+    \item Un parámetro $\rho$ de penalización por arribo a los clientes luego del valor $l_i$.
   \end{itemize}
 
   \section*{Metaheurístca}
@@ -64,12 +64,23 @@
   \begin{algorithm}
     \begin{algorithmic}
       \Function{Grasp}{$instance$}
+        \State{$bestSol \longleftarrow Null$}
         \For{$iter \in 0..MaxIter$}
           \State{$sol \longleftarrow ConstructSolution(instance)$}
+          \If{$sol == Null$}
+            \State{$continue$}
+          \EndIf
           \For{$localSearchIter \in 0..LocalSearchMaxiter$}
             \State{$sol \longleftarrow LocalSearch(instasnce, sol)$}
+            \If{$hasImproved(sol)$}
+              \State{break}
+            \EndIf
           \EndFor
-        \EndFor
+          \If{$value(sol) < value(bestSol)$}
+            \State{$bestSol \longleftarrow sol$}
+          \EndIf
+        \EndFor\\
+        \Return $bestSol$
       \EndFunction
     \end{algorithmic}
     \caption{Algorítmo GRASP \label{grasp}}
@@ -77,11 +88,11 @@
 
   \subsection*{Fase de construcción}
 
-  Esta fase, representada por la función $ConstructSolution(instance)$ en el pseudocódigo (\ref{grasp}) construye una solución secuencialmente partiendo de una solución vacía. En cada iteración decide cuál cliente satisfacer por cuál vehículo de esta manera construyendo potencialmente varias rutas de manera simultánea.
-  
-  En cada iteración, se toman los $MovesPerVehicle$ mejores movimientos posibles de cada vehículo y se agregan a una lista, luego se construye la RCL a partir de esa lista. Vale la pena aclarar que se consideran todos los vehículos, incluso los que no tienen clientes asignados y se asume que se encuentran en el nodo origen.
+  Esta fase, representada por la función $ConstructSolution(instance)$ en el pseudocódigo (\ref{grasp}), construye una solución a partir de un conjunto de rutas inicialmente vacías. Una ruta representa el recorrido de un vehículo. En cada iteración se decide un movimiento de vehículo a cliente y por lo tanto se agrega el cliente a la ruta asociada al vehículo. De esta manera se construyen potencialmente varias rutas de manera simultánea.
 
-  Los mejores movimientos son determinado por su costo. El costo de un movimiento depende del nodo actual en que se encuentra el vehículo, el nodo destino y el tiempo actual. De esta manera se computa el costo como:
+  El procedimiento seguido en cada iteración es: para cada vehículo se toman los $MovesPerVehicle$ mejores movimientos posibles, de entre los factibles, y se agregan a una lista, luego se construye la RCL a partir de dicha lista de movimientos. Vale la pena aclarar que se consideran todos los vehículos, incluso los que no tienen clientes asignados y se asume que se encuentran en el nodo origen.
+
+  Los mejores movimientos son determinado por su costo. El costo de un movimiento depende del cliente actual en que se encuentra el vehículo, el cliente destino y el tiempo actual. De esta manera se computa el costo del vehículo $v$, desde el cliente $i$ al cliente $j$ en tiempo $T$ como:
 
   \begin{align}
     CostoMov(v, i, j, T) = W_d t_{ij} + W_t PT_{ijT} + W_w WT_{ijT} + OT_{ijT} * \rho + \beta_i
@@ -92,13 +103,32 @@
     \item[$i, j$:] Son los clientes desde y cliente hasta para los que quiero evaluar el movimiento.
     \item[$T$]: Es el tiempo actual.
     \item[$W_d, W_t, W_w$:] Son pesos constantes configurables.
-    \item[$PT_{ijT}$:] Es la proximidad del arribo a $j$ al momento de cierre. Es decir $max(l_j - a_{vj}, 0)$.
-    \item[$WT_{ijT}$]: Es el tiempo de espera hasta la apertura de $j$. Es decir $max(e_j - a_{vj}, 0)$.
+    \item[$PT_{ijT}$:] Es la diferencia de tiempo desde el arribo a $j$ hasta el momento de cierre $l_j$. Es decir $max(l_j - a_{vj}, 0)$.
+    \item[$WT_{ijT}$]: Es el tiempo de espera hasta la apertura de $j$. Es decir $max(e_j - a_{vj}, 0)$. Consideramos que es factible que un vehículo arribe a un cliente antes de su momento de apertura, caso en el cuál debe esperar hasta la apertura.
     \item[$OT_{ijT}$:] Es el \it{overtime}, o tiempo excedido de arribo luego del cierre de $j$. Es decir $max(a_{vj} - l_j, 0)$.
     \item[$\beta_v$]: Es el costo fijo $f_v$ si $i$ es el nodo origen y $0$ sino.
   \end{description}
 
+  La idea de los parámetros $PT_{ijT}$ y $WT_{ijT}$ es poder jugar con la holgura en que un vehículo llega a un cliente. El primero pondera mejor movimientos a clientes próximos al tiempo de cierre. El segundo pondera mejor movimientos que inducen menos tiempo de espera.
+
+  Finalmente, el criterio de parada de la fase de construcción se da cuando no quedan clientes sin satisfacer o no hay movimientos posibles.
+
   \subsection*{Búsqueda local}
+
+  La búsqueda local se implementó según el pseudocódigo en (\ref{localsearch}). Los dos procedimientos de los que dependen son las búsquedas locales implementadas.
+
+  \begin{algorithm}
+    \caption{Búsqueda local}
+    \label{localsearch}
+    \begin{algorithmic}
+      \Function{LocalSearch}{instance, sol}
+        \State{$newSol \longleftarrow Opt2Search(instance, sol)$}
+        \State{$newSol \longleftarrow InsertionSerach(instance, newSol)$}\\
+        \Return $newSol$
+      \EndFunction
+    \end{algorithmic}
+  \end{algorithm}
+
 
   \section*{Referencias}
 

@@ -25,29 +25,87 @@
 
   \section*{Introducción}
 
-  En este documento se presenta GRASP como metaheurístca para el problema de ruteo de vehículos con ventanas de tiempo y flota heterogénea. Como variante, se agrega la posibilidad de ventanas de tiempo flexibles, es decir permitir a los vehículos llegar a los clientes luego de la ventana de tiempo predefinida, pagando cierta penalidad.
+  En este documento se presenta un GRASP como metaheurístca para el problema de ruteo de vehículos (VRP) con ventanas de tiempo y flota heterogénea, basandose en el modelo fomulado por (\ref{inco}) y en los modelos y resultados de problemas similares estudiados por Solomon (\ref{solomon}) y Jiang (\ref{jiang}).
 
-  \section{*Problema}
+  El GRASP desarrollado permite encontontrar soluciones a estos modelos siendo estas en algunos casos muy cercanas al óptimo.
 
-  Formalmente, el problema se define como:
-  TODO: No se si da para redefinir el problema matematicamente. Si da para explicarlo y referenciar el paper de Caludio.
+  \section*{Problema}
+
+  El problema que se quiere resolver es un clásico VRP con el adicionado de ventanas flexibles, esto quiere decir que los vehiculos pueden atender los clientes luego de finalizada la ventana de tiempo pagando cierta penalidad. Considerar esto es de utilidad ya que pueden encontontrarse soluciones cuyo costo es significativamente menor al de un VRP con ventana fija y puede tener sentido práctico en ciertos contextos.
+
+  \subsection*{Representación}
+
+  La representación del problema en computadora es sencilla, se requiere:
+  
+  \begin{itemize}
+    \item Una matriz de distancia entre clientes $t_{ij}$. La distancia está expresada en unidades de tiempo.
+    \item Una lista de vehículos, cada vehículo $v$ con un costo fijo $f_v$, costo variable $\alpha_v$ y capacidad $q_v$.
+    \item Una lista de clientes. Cada cliente $i$ cada uno con una demanda $d_i$, un tiempo de servicio $s_i$ y un rango de tiempo $e_i, l_i$ que representan el tiempo mínimo y máximo en que puede llegar un vehículo.
+    \item Un nodo origen, desde el que salen y llegan los vehículos. Se modela como un cliente con demanda 0.
+    \item Un porcentaje de flexibilidad de la ventana de tiempo de los clinetes $w$. Es decir un valor que permite que el arribo a un cliente $i$en cualquier momento dentro de $[e_i, l_i + (l_i - e_i)w]$ sea factible.
+    \item Un parámetro $\rho$ de penalización del arribo a los clientes luego del valor $l_i$.
+  \end{itemize}
 
   \section*{Metaheurístca}
 
-  TODO: Por que se eligió GRASP. ventajas/desventajas que pueda tener en este problema frente a otros.
-  Ej: tabu ya se uso, evolutivos/genetico no daba (o ya se estaba haciendo en otro curso)
+  TODO: Por que elegí GRASP
 
   \section*{GRASP}
+  
+  El GRASP implementado es una versión estándar que tiene las siguientes características:
 
-  TODO: características del GRASP
+  \begin{description}
+    \item[RCL de tamaño variable parametrizada por $\alpha$:] La RCL es una lista de candidatos $m_i$ con costo asociado $c_i$ que cumplen que $c_i \in [c_{min}, min + (c_{max} - c_{min}) \alpha]$
+    \item[Búsqueda local múltiple:] Durante la fáse de búsqueda local se recorren dos tipos de vecindades.
+  \end{description}
+
+  El algorítmo seguido se detalla en el pseudocódigo (\ref{grasp}).
+
+  \begin{algorithm}
+    \begin{algorithmic}
+      \Function{Grasp}{$instance$}
+        \For{$iter \in 0..MaxIter$}
+          \State{$sol \longleftarrow ConstructSolution(instance)$}
+          \For{$localSearchIter \in 0..LocalSearchMaxiter$}
+            \State{$sol \longleftarrow LocalSearch(instasnce, sol)$}
+          \EndFor
+        \EndFor
+      \EndFunction
+    \end{algorithmic}
+    \caption{Algorítmo GRASP \label{grasp}}
+  \end{algorithm}
 
   \subsection*{Fase de construcción}
+
+  Esta fase, representada por la función $ConstructSolution(instance)$ en el pseudocódigo (\ref{grasp}) construye una solución secuencialmente partiendo de una solución vacía. En cada iteración decide cuál cliente satisfacer por cuál vehículo de esta manera construyendo potencialmente varias rutas de manera simultánea.
+  
+  En cada iteración, se toman los $MovesPerVehicle$ mejores movimientos posibles de cada vehículo y se agregan a una lista, luego se construye la RCL a partir de esa lista. Vale la pena aclarar que se consideran todos los vehículos, incluso los que no tienen clientes asignados y se asume que se encuentran en el nodo origen.
+
+  Los mejores movimientos son determinado por su costo. El costo de un movimiento depende del nodo actual en que se encuentra el vehículo, el nodo destino y el tiempo actual. De esta manera se computa el costo como:
+
+  \begin{align}
+    CostoMov(v, i, j, T) = W_d t_{ij} + W_t PT_{ijT} + W_w WT_{ijT} + OT_{ijT} * \rho + \beta_i
+  \end{align}
+  
+  Donde, sea $a_{vj} = T + t_{ij}$ el momento de arribo a del vehículo $v$ al cliente $j$:
+  \begin{description}
+    \item[$i, j$:] Son los clientes desde y cliente hasta para los que quiero evaluar el movimiento.
+    \item[$T$]: Es el tiempo actual.
+    \item[$W_d, W_t, W_w$:] Son pesos constantes configurables.
+    \item[$PT_{ijT}$:] Es la proximidad del arribo a $j$ al momento de cierre. Es decir $max(l_j - a_{vj}, 0)$.
+    \item[$WT_{ijT}$]: Es el tiempo de espera hasta la apertura de $j$. Es decir $max(e_j - a_{vj}, 0)$.
+    \item[$OT_{ijT}$:] Es el \it{overtime}, o tiempo excedido de arribo luego del cierre de $j$. Es decir $max(a_{vj} - l_j, 0)$.
+    \item[$\beta_v$]: Es el costo fijo $f_v$ si $i$ es el nodo origen y $0$ sino.
+  \end{description}
 
   \subsection*{Búsqueda local}
 
   \section*{Referencias}
 
   \begin{enumerate}
-    \item{ \label{repo} \url{https://github.com/joaquinco/mor-proj}}
+    \item{\label{jiang} Jun Jiang, Kien Ming Ng, Kim Leng Poh, Kwong Meng Teo (2014). Vehicle routing problem with a heterogeneous fleet and time windows}
+    \item{\label{inco} Lucía Barrero, Rodrigo Viera, Franco Robledo, Claudio Risso, Sergio Nesmachnow and Andrei Tchernykh (2020). Exact resolution of the Vehicle Routing Problem with Flexible Time Windows}
+    \item{\label{solomon} Solomon, M. M. (1985). Algorithms for the vehicle routing and scheduling problems with time window constraints}
+    \item{\label{repo} Repositorio de la implementación del GRASP. \url{https://github.com/joaquinco/mor-proj}}
   \end{enumerate}
 \end{document}

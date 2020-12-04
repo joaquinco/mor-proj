@@ -92,24 +92,24 @@
 
   El procedimiento seguido en cada iteración es: para cada vehículo se toman los $MovesPerVehicle$ mejores movimientos posibles, de entre los factibles, y se agregan a una lista, luego se construye la RCL a partir de dicha lista de movimientos. Vale la pena aclarar que se consideran todos los vehículos, incluso los que no tienen clientes asignados y se asume que se encuentran en el nodo origen.
 
-  Los mejores movimientos son determinado por su costo. El costo de un movimiento depende del cliente actual en que se encuentra el vehículo, el cliente destino y el tiempo actual. De esta manera se computa el costo del vehículo $v$, desde el cliente $i$ al cliente $j$ en tiempo $T$ como:
+  Los mejores movimientos son determinado por su costo. El costo de un movimiento depende del cliente actual en que se encuentra el vehículo, el cliente destino y el tiempo corriente para el vehículo. De esta manera se computa el costo del vehículo $v$, desde el cliente $i$ al cliente $j$ en tiempo $T_v$ como:
 
   \begin{align}
-    CostoMov(v, i, j, T) = W_d t_{ij} + W_t PT_{ijT} + W_w WT_{ijT} + OT_{ijT} * \rho + \beta_i
+    CostoMov(v, i, j, T_v) = W_d t_{ij} + W_t PT_{ijT_v} + W_w WT_{ijT_v} + OT_{ijT_v} * \rho + \beta_i
   \end{align}
   
-  Donde, sea $a_{vj} = T + t_{ij}$ el momento de arribo a del vehículo $v$ al cliente $j$:
+  Donde, sea $a_{vj} = T_v + t_{ij}$ el momento de arribo a del vehículo $v$ al cliente $j$:
   \begin{description}
     \item[$i, j$:] Son los clientes desde y cliente hasta para los que quiero evaluar el movimiento.
-    \item[$T$]: Es el tiempo actual.
+    \item[$T_v$]: Es el corriente para el vehículo $v$.
     \item[$W_d, W_t, W_w$:] Son pesos constantes configurables.
-    \item[$PT_{ijT}$:] Es la diferencia de tiempo desde el arribo a $j$ hasta el momento de cierre $l_j$. Es decir $max(l_j - a_{vj}, 0)$.
-    \item[$WT_{ijT}$]: Es el tiempo de espera hasta la apertura de $j$. Es decir $max(e_j - a_{vj}, 0)$. Consideramos que es factible que un vehículo arribe a un cliente antes de su momento de apertura, caso en el cuál debe esperar hasta la apertura.
-    \item[$OT_{ijT}$:] Es el \it{overtime}, o tiempo excedido de arribo luego del cierre de $j$. Es decir $max(a_{vj} - l_j, 0)$.
-    \item[$\beta_v$]: Es el costo fijo $f_v$ si $i$ es el nodo origen y $0$ sino.
+    \item[$PT_{ijT_v}$:] Es la diferencia de tiempo desde el arribo a $j$ hasta el momento de cierre $l_j$. Es decir $max(l_j - a_{vj}, 0)$.
+    \item[$WT_{ijT_v}$]: Es el tiempo de espera hasta la apertura de $j$. Es decir $max(e_j - a_{vj}, 0)$. Consideramos que es factible que un vehículo arribe a un cliente antes de su momento de apertura, caso en el cuál debe esperar hasta la apertura.
+    \item[$OT_{ijT_v}$:] Es el {\it overtime}, o tiempo excedido de arribo luego del cierre de $j$. Es decir $max(a_{vj} - l_j, 0)$.
+    \item[$\beta_v$]: Parmámetro que vale el costo fijo $f_v$ si $i$ es el nodo origen y $0$ sino.
   \end{description}
 
-  La idea de los parámetros $PT_{ijT}$ y $WT_{ijT}$ es poder jugar con la holgura en que un vehículo llega a un cliente. El primero pondera mejor movimientos a clientes próximos al tiempo de cierre. El segundo pondera mejor movimientos que inducen menos tiempo de espera.
+  La idea de los parámetros $PT_{ijT_v}$ y $WT_{ijT_v}$ es poder jugar con la holgura en que un vehículo llega a un cliente. El primero pondera mejor movimientos a clientes próximos al tiempo de cierre. El segundo pondera mejor movimientos que inducen menos tiempo de espera.
 
   Finalmente, el criterio de parada de la fase de construcción se da cuando no quedan clientes sin satisfacer o no hay movimientos posibles.
 

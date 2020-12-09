@@ -160,13 +160,18 @@
     \label{opt2example}
   \end{figure}
 
+  OPT2 logró una mejora en las soluciones respecto a la fase de construcción en todos los casos como se detallará en la sección de resultados. Sin embargo habían casos en que esta transformación no era suficiente, las soluciones eran parecidas a las óptimas a menos de algunos clientes que debían ser movidos de una ruta a otra.
+
+  \subsubsection*{Insertion}
+
+  Para contemplar algunas falencias de OPT2, se implementó la búsqueda que llamaremos Insertion. Lo que hace es dada dos rutas A y B, intenta insertar un cliente de A en B.
 
 
   \section*{Referencias}
 
   \begin{enumerate}
     \item{\label{jiang} Jun Jiang, Kien Ming Ng, Kim Leng Poh, Kwong Meng Teo (2014). Vehicle routing problem with a heterogeneous fleet and time windows}
-    \item{\label{inco} Lucía Barrero, Rodrigo Viera, Franco Robledo, Claudio Risso, Sergio Nesmachnow and Andrei Tchernykh (2020). Exact resolution of the Vehicle Routing Problem with Flexible Time Windows}
+    \item{\label{inco} Lucía Barrero, Rodrigo Viera, Franco Robledo, Claudio Risso, Sergio Nesmachnow, Andrei Tchernykh (2020). Exact resolution of the Vehicle Routing Problem with Flexible Time Windows}
     \item{\label{solomon} Solomon, M. M. (1985). Algorithms for the vehicle routing and scheduling problems with time window constraints}
     \item{\label{repo} Repositorio de la implementación del GRASP. \url{https://github.com/joaquinco/mor-proj}}
   \end{enumerate}

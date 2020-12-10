@@ -16,6 +16,17 @@ else
   config=""
 fi
 
+get_solution_path() {
+  $filebase=$1
+
+  if [ -n "$OUTPUT_PATH" ]; then
+    basename=$(basename "$filebase")
+    echo "${OUTPUT_PATH}/${basename}_out.json"
+  else
+    echo "${filebase}_out.json"
+  fi
+}
+
 execute_staff() {
   file=$1
   filebase=${file%%.*}
@@ -25,7 +36,7 @@ execute_staff() {
     file=$($convert $file)
   fi
 
-  solution=${filebase}_out.json
+  solution=$(get_solution_path $filebase)
   $runheuristic $file -o $solution $config
 
   if [ $? -ne 0 ]; then

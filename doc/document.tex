@@ -115,13 +115,6 @@
 
   Finalmente, el criterio de parada de la fase de construcción se da cuando no quedan clientes sin satisfacer o no hay movimientos posibles.
 
-  \subsubsection*{Otras ideas}
-
-  Otro algorítmo implementado pero que no funcionó bien fue tener dos RCL, una para vehículos (cuyo costo depende de capacidad y costo fijo) y otra para movimientos (similar a la descripta anteriormente).
-  La primera es fija y se genera al comienzo de la fase de construcción. Entonces el procedimiento toma un vehículo de la RCL de vehículos e iterativamente agrega clientes desde la RCL de movimientos hasta que el vehículo no tiene capacidad restante o no hay movimientos disponibles.
-
-  Lo que se buscaba con este enfoque es minimizar la cantidad de vehículos utilizados. En la práctica las soluciones no fueron buenas.
-
   \subsubsection*{RCL}
 
   La RCL de tamaño variable descrita, una vez generada, elige un elemento con al azar con probabilidad uniforme. Antes de llegar a esta solución, se intentaron dos enfoques que no lograron tan buenos resultados en los casos de prueba:
@@ -129,6 +122,13 @@
     \item[Largo fijo]: Utilizando RCLs de largo 3, 4 y 5 y probabilidad uniforme se observó en general que se desempeñaba bien, pero en algunos casos consideraba movimientos muy malos o dejaba de considerar movimientos deseables.
     \item[Peso ponderado]: Se consideran los $N$ mejores movimientos y se sortean según su peso ponderado (a menor costo mayor probabilidad). Sea $c_N$ el costo total de los $N$ mejores movimientos y $c_i$ el costo del movimiento $i$, la probabilidad asignada al movimiento $i$ es $\frac{(c_N - c_i)}{c_N}$. Esta en general se desempeño bien.
   \end{description}
+
+  \subsubsection*{Otras ideas}
+
+  Otro algorítmo implementado pero que no funcionó bien fué tener dos RCL, una para vehículos (cuyo costo depende de capacidad y costo fijo) y otra para movimientos (similar a la descripta anteriormente).
+  La primera es fija y se genera al comienzo de la fase de construcción. Entonces el procedimiento toma un vehículo de la RCL de vehículos e iterativamente agrega clientes desde la RCL de movimientos hasta que el vehículo no tiene capacidad restante o no hay movimientos disponibles.
+
+  Lo que se buscaba con este enfoque es minimizar la cantidad de vehículos utilizados. En la práctica las soluciones no fueron buenas.
 
   \subsection*{Búsqueda local}
 
@@ -160,12 +160,23 @@
     \label{opt2example}
   \end{figure}
 
-  OPT2 logró una mejora en las soluciones respecto a la fase de construcción en todos los casos como se detallará en la sección de resultados. Sin embargo habían casos en que esta transformación no era suficiente, las soluciones eran parecidas a las óptimas a menos de algunos clientes que debían ser movidos de una ruta a otra.
+  OPT2 logró una mejora en las soluciones respecto a la fase de construcción en todos los casos como se detallará en la sección de resultados. Sin embargo habían casos en que esta transformación no era suficiente ya que las soluciones eran parecidas a las óptimas a menos de algunos clientes que debían ser movidos de una ruta a otra u el órden de los clientes dentro de cada ruta.
 
   \subsubsection*{Insertion}
 
-  Para contemplar algunas falencias de OPT2, se implementó la búsqueda que llamaremos Insertion. Lo que hace es dada dos rutas A y B, intenta insertar un cliente de A en B.
+  Para contemplar algunas falencias de OPT2, se implementó la búsqueda que llamaremos Insertion. Lo que hace es dada dos rutas A y B, intenta insertar un cliente de A en B de manera de reducir la suma de los costos de ambas rutas.
 
+  \subsection*{Ajuste de hiperparámetros}
+
+  \section*{Resultados}
+
+  \section*{Conclusión}
+
+  \section*{Trabajo a futuro}
+
+  TODO
+
+  \section*{Implementación}
 
   \section*{Referencias}
 

@@ -1,7 +1,8 @@
-use std::{cmp, collections::{HashSet, HashMap}};
+use std::{fmt, cmp, collections::{HashSet, HashMap}};
 use std::iter::Iterator;
 
 use serde::{Serialize, Deserialize};
+use serde_json;
 
 use crate::types::{
   Cost,
@@ -56,6 +57,12 @@ impl Default for GraspConfig {
       insertion_search_first_improvement: true,
       insertion_search_sequence_length: 1,
     }
+  }
+}
+
+impl fmt::Display for GraspConfig {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}", serde_json::to_string_pretty(&self).unwrap())
   }
 }
 

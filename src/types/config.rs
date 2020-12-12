@@ -32,9 +32,11 @@ impl fmt::Display for Config {
     write!(
       f,
       "- iters: {}\n\
-      - number of threads: {}",
+      - number of threads: {}\n\
+      - grasp config:\n{}",
       self.iters,
       self.number_of_threads,
+      self.grasp_config
     )
   }
 }

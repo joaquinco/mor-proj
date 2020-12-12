@@ -29,7 +29,7 @@ get_solution_path() {
 
 execute_staff() {
   file=$1
-  filebase=${file%%.*}
+  filebase=${file%.*}
   ext=${file#*.}
 
   if [ $ext = 'm' ]; then

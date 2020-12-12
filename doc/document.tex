@@ -98,6 +98,7 @@
 
   \begin{align}
     CostoMov(v, i, j, T_v) = W_d t_{ij} + W_t PT_{ij}^{T_v} + W_w WT_{ij}^{T_v} + OT_{ij}^{T_v} \rho + \beta_i
+    \label{eq:rclmovecost}
   \end{align}
   
   Donde, sea $a_{vj} = T_v + t_{ij}$ el momento de arribo a del vehículo $v$ al cliente $j$:
@@ -166,7 +167,22 @@
 
   Para contemplar algunas falencias de OPT2, se implementó la búsqueda que llamaremos Insertion. Lo que hace es dada dos rutas A y B, intenta insertar un cliente de A en B de manera de reducir la suma de los costos de ambas rutas.
 
-  \subsection*{Ajuste de hiperparámetros}
+  \subsection*{Ajuste de parámetros}
+
+  Como se mencionó anteriormente, el ajuste del GRASP se realizó comparando contra las instancias de 25 nodos de Solomon.
+  
+  Los parámetros del GRASP a ajustar son, a grandes rasgos:
+
+  \begin{enumerate}
+    \item {Los que determinan el costo de un movimiento. Estos son los $W_d, W_t y W_w$ de la ecuación \ref{eq:rclmovecost}}.
+    \item {En las búsquedas locales, si hacer {\it first improvement} ó {\it best improvement} en cada una y a nivel general. Recordemos que las búsquedas locales implementadas genera vecindades sobre un par de caminos, aquí tenemos un nivel de {\it first/best improvement}. Luego a nivel de solución se puede decidir {\it first/best improvement} para el espacio de búsqueda de pares de caminos, es decir si para el primer par de caminos que $X$ búsqueda local encuentra una mejor solución, o para el par de caminos que mejor solución vecina encuentra.}
+  \end{enumerate}
+
+  Para calibrar los primeros, se consideraron combinaciones de valores de dichos parámetros que suman 1 y se ejecutaron todas las instancias de prueba. Para determinar las combinaciones, se consideraron valores en el intervalo $[0, 1)$ espaciados cada $0.1$. Esto devino en 18 posibles configuraciones que fueron ejecutadas en el cluster.
+
+  Como alternativa, se pudo haber hecho un estudio de las variables finales de las ejecuciones de CPLEX.
+
+  Para calibrar las búsquedas locales, se tomó el mejor
 
   \section*{Resultados}
 

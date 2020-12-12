@@ -47,7 +47,7 @@ def generate_config_files(filename, base_config):
     new_config['grasp_config'].update(
       distance_weight=d,
       time_weight=t,
-      wait_time_weights=w,
+      wait_time_weight=w,
     )
 
     with open(f'{filename}_{index}.json', 'w') as fp:

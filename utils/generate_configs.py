@@ -5,19 +5,22 @@ import sys
 
 from itertools import combinations
 
-range_01 = [0.1 * idx for idx in range(10)]
+value_range = [0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9, 1]
 
-distance_weights = range_01
-time_weights = range_01
-wait_time_weights = range_01
+distance_weights = value_range
+time_weights = value_range
+wait_time_weights = [0.0, 0.1, 0.2, 0.3, 0.5]
 
+
+def almost_equal(v1, v2):
+  return abs(abs(v1) - abs(v2)) < 1e-7
 
 def _do_normalized_combinations(value_left, current, *iters):
   """
   Recurively iterates and return tuples
   """
   if len(iters) == 0:
-    if value_left == 0:
+    if almost_equal(value_left, 0):
       yield current
   else:
     for value in iters[0]:
@@ -43,6 +46,7 @@ def generate_config_files(filename, base_config):
 
   for index, values in enumerate(value_combinations):
     d, t, w = values
+
     new_config = copy.deepcopy(base_config)
     new_config['grasp_config'].update(
       distance_weight=d,

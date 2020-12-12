@@ -17,7 +17,7 @@ else
 fi
 
 get_solution_path() {
-  $filebase=$1
+  filebase=$1
 
   if [ -n "$OUTPUT_PATH" ]; then
     basename=$(basename "$filebase")

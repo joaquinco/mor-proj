@@ -178,9 +178,22 @@
     \item {En las búsquedas locales, si hacer {\it first improvement} ó {\it best improvement} en cada una y a nivel general. Recordemos que las búsquedas locales implementadas genera vecindades sobre un par de caminos, aquí tenemos un nivel de {\it first/best improvement}. Luego a nivel de solución se puede decidir {\it first/best improvement} para el espacio de búsqueda de pares de caminos, es decir si para el primer par de caminos que $X$ búsqueda local encuentra una mejor solución, o para el par de caminos que mejor solución vecina encuentra.}
   \end{enumerate}
 
-  Para calibrar los primeros, se consideraron combinaciones de valores de dichos parámetros que suman 1 y se ejecutaron todas las instancias de prueba. Para determinar las combinaciones, se consideraron valores en el intervalo $[0, 1)$ espaciados cada $0.1$. Esto devino en 18 posibles configuraciones que fueron ejecutadas en el cluster.
+  \subsubsection*{Calibración parámetros de costo de movimiento}
+
+  Para calibrar los primeros, se consideraron combinaciones de valores de dichos parámetros que suman 1 y se ejecutaron todas las instancias de prueba. Para determinar las combinaciones, se consideró un conjunto de valores entre 0 y 1. Esto devino en 22 posibles configuraciones que fueron ejecutadas en el cluster, esta ejecución no incluyó la búsqueda local.
 
   Como alternativa, se pudo haber hecho un estudio de las variables finales de las ejecuciones de CPLEX.
+
+  Para evaluar la mejor asignación se tuvieron datos sobre las 18 instancias de prueba y 22 ejecuciones. El primer paso fué descartar las ejecuciones que no encontraron soluciones factibles para alguna instancia, dado que no hay una fase de corrección de soluciones no factibles, estas configuraciones dejan mal parado al algorítmo. Esto descartó 4 conjuntos de configuraciones.
+
+  Luego, para obtener una visión a gran escala del desempeño de las configuraciones, se decidió comparar la suma de las 18 soluciones entre configuraciones y compararlas con un histograma. De esto, nos quedamos con las 7 mejores configuraciones cuyo desempeño agregado es similar como se observa en la figura \ref{cmphistogram}.
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=10cm]{resources/tunning/total_cost_histogram_used.png}
+    \caption{Histograma donde se compara la suma de los costos de las soluciones encontradas por cada configuración. Se consideran dos factores: el costo total y la distancia. El primero es el valor objetivo, el segundo es un valor que se es deseable que sea mínimo}.
+    \label{cmphistogram}
+  \end{figure}
 
   Para calibrar las búsquedas locales, se tomó el mejor
 

@@ -3,8 +3,8 @@
   "report_every": 10000,
   "number_of_threads": 4,
   "grasp_config": {
-    "distance_weight": 1,
-    "time_weight": 0.5,
+    "distance_weight": 0.7,
+    "time_weight": 0.1,
     "wait_time_weight": 0.2,
     "moves_per_vehicle": 2,
     "rcl_alpha": 0.8,

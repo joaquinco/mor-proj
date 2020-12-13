@@ -41,9 +41,9 @@ pub struct GraspConfig {
 impl Default for GraspConfig {
   fn default() -> GraspConfig {
     GraspConfig {
-      time_weight: 0.3,
-      distance_weight: 0.3,
-      wait_time_weight: 1.0,
+      time_weight: 0.1,
+      distance_weight: 0.7,
+      wait_time_weight: 0.2,
       rcl_size: 5,
       rcl_alpha: 0.3,
       rcl_min_size: 1,

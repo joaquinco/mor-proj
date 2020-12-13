@@ -86,7 +86,7 @@
     \caption{Algorítmo GRASP \label{grasp}}
   \end{algorithm}
 
-  El desarrollo y ajuste de parámetros se realizó ejecutando algunas instancias del dataset Solomon de 25 nodos para las cuales se tienen valores óptimos o muy buenos de soluciones tanto para ventana fija como para ventana flexible.
+  El desarrollo y ajuste de parámetros se realizó ejecutando 18 de las instancias del dataset Solomon de 25 nodos para las cuales se tienen valores óptimos o muy buenos de soluciones tanto para ventana fija como para ventana flexible.
 
   \subsection*{Fase de construcción}
 
@@ -182,11 +182,11 @@
 
   Para calibrar los primeros, se consideraron combinaciones de valores de dichos parámetros que suman 1 y se ejecutaron todas las instancias de prueba. Para determinar las combinaciones, se consideró un conjunto de valores entre 0 y 1. Esto devino en 22 posibles configuraciones que fueron ejecutadas en el cluster, esta ejecución no incluyó la búsqueda local.
 
-  Como alternativa, se pudo haber hecho un estudio de las variables finales de las ejecuciones de CPLEX.
-
   Para evaluar la mejor asignación se tuvieron datos sobre las 18 instancias de prueba y 22 ejecuciones. El primer paso fué descartar las ejecuciones que no encontraron soluciones factibles para alguna instancia, dado que no hay una fase de corrección de soluciones no factibles, estas configuraciones dejan mal parado al algorítmo. Esto descartó 4 conjuntos de configuraciones.
 
   Luego, para obtener una visión a gran escala del desempeño de las configuraciones, se decidió comparar la suma de las 18 soluciones entre configuraciones y compararlas con un histograma. De esto, nos quedamos con las 7 mejores configuraciones cuyo desempeño agregado es similar como se observa en la figura \ref{cmphistogram}.
+
+  Finalmente, calculando el promedio y desviación estándar del error de las soluciones contra las de referencia, se eligió la configuración que minimizaba ambos valores. Esta es: $W_d = 0.7, W_t = 0.1 y W_w = 0.2$.
 
   \begin{figure}
     \centering

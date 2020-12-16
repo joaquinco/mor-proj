@@ -53,7 +53,7 @@ def validate_solution(data):
       arc_time = distances[c1.get('client_id')][c2.get('client_id')]
       current_time = max(client2.get('earliest'), arc_time + current_time)
       allowed_offset = (client2.get('latest') - client2.get('earliest')) * allowed_deviation
-      client_latest = client2.get('latest') + allowed_deviation
+      client_latest = client2.get('latest') + allowed_offset
       capacity_left -= client2.get('demand')
       arrive_time = c2.get('arrive_time')
 

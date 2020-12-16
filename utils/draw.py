@@ -4,10 +4,26 @@ import json
 import os
 import sys
 
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, colors as mpl_colors
 
 from misc import log_err
 
+
+def not_white(value):
+  if not isinstance(value, str):
+    return False
+
+  lvalue = value.lower()
+  return not(lvalue == 'white' or lvalue.startswith('#f'))
+
+def get_colors():
+  return list(filter(
+    not_white,
+    mpl_colors.get_named_colors_mapping().values()
+  ))
+
+
+COLORS = get_colors()
 SOURCE_COLOR = 'red'
 CLIENTS_COLOR = 'gray'
 
@@ -38,7 +54,7 @@ def draw_solution_to_figure(data):
   fig = plt.figure()
   ax1 = fig.add_subplot()
 
-  colors = ['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black', 'gray', 'darkred', 'darkmagenta']
+  colors = COLORS[:]
 
   for route in routes:
     color = colors.pop()

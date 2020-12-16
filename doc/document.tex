@@ -195,7 +195,9 @@
     \label{cmphistogram}
   \end{figure}
 
-  Para calibrar las búsquedas locales, se tomó el mejor
+  \subsubsection*{Calibración de búsquedas locales}
+
+  Con los parámetros de la sección anterior ya configurados, se procedió a investigar el comportamiento de la búsqueda local respecto a {\it first/best improvement}. Se generaron las ocho combinaciones posibles de los tres parámetros booleanos y se realizaron las ejecuciones tomando $LocalSearchMaxiter = 1000$ (ver \ref{grasp}). Como resultado no se vió mayor diferencia en ninguna de las ejecuciones. Ocurrieronme dos explicaciones para esto: que el tamaño de las instancias es demasiado chico para podes; que la cantidad de iteraciones $LocalSearchMaxiter$ haga que el se comporten igual. Se decidió elegir la configuración mas rápida, es decir {\it first improvement} par las tres variables.
 
   \section*{Resultados}
 
@@ -203,7 +205,9 @@
 
   \section*{Trabajo a futuro}
 
-  TODO
+  \subsection*{Mejor consideración de movimientos por vehículo}
+  
+  En la implementación de este trabajo, la cantidad de movimientos por vehículo a incluir en la RCL es un parámetro del modelo. Se podría tomar enfoque mas inteligente y tomar una cantidad variable de movimientos dependiendo que tan buenos sean estos, por ejemplo, de la misma manera que se construya la RCl.
 
   \section*{Implementación}
 

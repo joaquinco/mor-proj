@@ -1,0 +1,5 @@
+*
+!.gitignore
+!/solomon100
+!/solomon100/*.json
+

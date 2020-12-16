@@ -9,7 +9,9 @@ export JOB_NAME=$SLURM_JOB_NAME
 # Data needed by the run.sh
 export OUTPUT_PATH="$JOB_HOME/output/$JOB_NAME"
 export HEURISTIC_CONFIG="$JOB_HOME/runconfig/$JOB_NAME.json"
-export DATASET_PATH="$PROJECT_HOME/datasets/flexible_window/*.json"
+if [ ! -n "$DATASET_PATH" ]; then
+	export DATASET_PATH="$PROJECT_HOME/datasets/flexible_window_100/*.json"
+fi
 
 export LOG_FILE="$OUTPUT_PATH/execution.log"
 

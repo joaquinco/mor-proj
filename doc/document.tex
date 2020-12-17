@@ -97,7 +97,7 @@
   Los mejores movimientos son determinado por su costo. El costo de un movimiento depende del cliente actual en que se encuentra el vehículo, el cliente destino y el tiempo corriente para el vehículo. De esta manera se computa el costo del vehículo $v$, desde el cliente $i$ al cliente $j$ en tiempo $T_v$ como:
 
   \begin{align}
-    CostoMov(v, i, j, T_v) = W_d t_{ij} + W_t PT_{ij}^{T_v} + W_w WT_{ij}^{T_v} + OT_{ij}^{T_v} \rho + \beta_i
+    CostoMov(v, i, j, T_v) = W_d t_{ij} \alpha_v + W_t PT_{ij}^{T_v} + W_w WT_{ij}^{T_v} + OT_{ij}^{T_v} \rho + \beta_i
     \label{eq:rclmovecost}
   \end{align}
   
@@ -121,7 +121,7 @@
   La RCL de tamaño variable descrita, una vez generada, elige un elemento con al azar con probabilidad uniforme. Antes de llegar a esta solución, se intentaron dos enfoques que no lograron tan buenos resultados en los casos de prueba:
   \begin{description}
     \item[Largo fijo]: Utilizando RCLs de largo 3, 4 y 5 y probabilidad uniforme se observó en general que se desempeñaba bien, pero en algunos casos consideraba movimientos muy malos o dejaba de considerar movimientos deseables.
-    \item[Peso ponderado]: Se consideran los $N$ mejores movimientos y se sortean según su peso ponderado (a menor costo mayor probabilidad). Sea $c_N$ el costo total de los $N$ mejores movimientos y $c_i$ el costo del movimiento $i$, la probabilidad asignada al movimiento $i$ es $\frac{(c_N - c_i)}{c_N}$. Esta en general se desempeño bien.
+    \item[Peso ponderado]: Se consideran los $N$ mejores movimientos y se sortean según su peso ponderado (a menor costo mayor probabilidad). Sea $c_N$ el costo total de los $N$ mejores movimientos y $c_i$ el costo del movimiento $i$, la probabilidad asignada al movimiento $i$ es $\frac{(c_N - c_i)}{c_N}$. Este enfoque en general no se desempeño bien.
   \end{description}
 
   \subsubsection*{Otras ideas}
@@ -178,7 +178,7 @@
     \item {En las búsquedas locales, si hacer {\it first improvement} ó {\it best improvement} en cada una y a nivel general. Recordemos que las búsquedas locales implementadas genera vecindades sobre un par de caminos, aquí tenemos un nivel de {\it first/best improvement}. Luego a nivel de solución se puede decidir {\it first/best improvement} para el espacio de búsqueda de pares de caminos, es decir si para el primer par de caminos que $X$ búsqueda local encuentra una mejor solución, o para el par de caminos que mejor solución vecina encuentra.}
   \end{enumerate}
 
-  \subsubsection*{Calibración parámetros de costo de movimiento}
+  \subsubsection*{Costo de movimiento}
 
   Para calibrar los primeros, se consideraron combinaciones de valores de dichos parámetros que suman 1 y se ejecutaron todas las instancias de prueba. Para determinar las combinaciones, se consideró un conjunto de valores entre 0 y 1. Esto devino en 22 posibles configuraciones que fueron ejecutadas en el cluster, esta ejecución no incluyó la búsqueda local.
 
@@ -195,9 +195,9 @@
     \label{cmphistogram}
   \end{figure}
 
-  \subsubsection*{Calibración de búsquedas locales}
+  \subsubsection*{Búsquedas locales}
 
-  Con los parámetros de la sección anterior ya configurados, se procedió a investigar el comportamiento de la búsqueda local respecto a {\it first/best improvement}. Se generaron las ocho combinaciones posibles de los tres parámetros booleanos y se realizaron las ejecuciones tomando $LocalSearchMaxiter = 1000$ (ver \ref{grasp}). Como resultado no se vió mayor diferencia en ninguna de las ejecuciones. Ocurrieronme tres explicaciones para esto: que el tamaño de las instancias es demasiado chico para podes; que la cantidad de iteraciones $LocalSearchMaxiter$ haga que se comporten igual es decir que el moverse por la primera mejora reiteradas veces converja a la mejor mejora; por último, que la cantidad de vecinos de una solución no sean relativamente pocos. Luego de analizar los logs de ejecución utilizando {\it best improvement} en los tres parámetros, se pudo confirmar el último caso. Ocurre que tanto para instancias de 25 nodos como de 100, las vecindades definidas no tienen tamaño mayor a 5 instancias, siendo en promedio 1.
+  Con los parámetros de la sección anterior ya configurados, se procedió a investigar el comportamiento de la búsqueda local respecto a {\it first/best improvement}. Se generaron las ocho combinaciones posibles de los tres parámetros booleanos y se realizaron las ejecuciones tomando $LocalSearchMaxiter = 1000$ (ver \ref{grasp}). Como resultado no se vió mayor diferencia en los resultados de las ejecuciones. Ocurrieronme tres explicaciones para esto: que el tamaño de las instancias es demasiado chico para notar diferencias; que la cantidad de iteraciones $LocalSearchMaxiter$ haga que {\it best} y {\it first} se comporten igual, es decir que el moverse por la primera mejora reiteradas veces convergiera a la mejor mejora; por último, que la cantidad de vecinos de una solución sean relativamente pocos. Luego de analizar los logs de ejecución utilizando {\it best improvement} en los tres parámetros, se pudo confirmar el último caso. Ocurre que tanto para instancias de 25 nodos como de 100, las vecindades definidas no tienen tamaño mayor a 5 instancias, siendo en promedio entre 1 y 2 vecinos.
   
   Se decidió elegir la configuración mas rápida, es decir {\it first improvement} par los tres parámetros.
 

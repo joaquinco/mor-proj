@@ -29,7 +29,8 @@ cd $PROJECT_HOME
 
 ./bin/run.sh $DATASET_PATH > $TMP_LOG_FILE 2>&1
 
+python utils/summarize.py $OUTPUT_PATH/*.json > $OUTPUT_PATH/summary_$JOB_HOME.csv
+
 cp $TMP_LOG_FILE $LOG_FILE
 
 cd -
-

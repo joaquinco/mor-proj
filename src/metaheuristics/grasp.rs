@@ -334,18 +334,20 @@ impl Grasp {
     arrival_time: Time,
     wait_time: Time
   ) -> f64 {
+    let vehicle = &problem.vehicles[vroute.vehicle_id];
     let fixed_cost = if problem.source == vroute.current_client_id {
-                      20.0 * problem.vehicles[vroute.vehicle_id].fixed_cost
+                      20.0 * vehicle.fixed_cost
                     } else {
                       0 as Cost
                     };
+
     let distance = problem.distances[vroute.current_client_id][client_to];
     let client = &problem.clients[client_to];
     let close_proximity_time: Time = time_max(client.latest - arrival_time, 0 as Time);
     let overtime = time_max(arrival_time - client.latest, 0 as Time);
 
     fixed_cost
-    + self.config.distance_weight * distance as f64
+    + self.config.distance_weight * distance * vehicle.variable_cost as f64
     + self.config.time_weight * close_proximity_time as f64
     + self.config.wait_time_weight * wait_time as f64
     + problem.deviation_penalty * overtime as f64

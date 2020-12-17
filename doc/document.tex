@@ -27,7 +27,7 @@
 
   En este documento se presenta un GRASP como metaheurístca para el problema de ruteo de vehículos (VRP) con ventanas de tiempo y flota heterogénea, basandose en el modelo fomulado por (\ref{inco}) y en los modelos y resultados de problemas similares estudiados por Solomon (\ref{solomon}) y Jiang (\ref{jiang}).
 
-  El GRASP desarrollado permite encontontrar soluciones a estos modelos siendo estas en algunos casos muy cercanas al óptimo.
+  El GRASP desarrollado permite encontrar soluciones a estos modelos siendo estas en algunos casos muy cercanas al óptimo.
 
   \section*{Problema}
 
@@ -191,13 +191,15 @@
   \begin{figure}
     \centering
     \includegraphics[width=10cm]{resources/tunning/total_cost_histogram_used.png}
-    \caption{Histograma donde se compara la suma de los costos de las soluciones encontradas por cada configuración. Se consideran dos factores: el costo total y la distancia. El primero es el valor objetivo, el segundo es un valor que se es deseable que sea mínimo}.
+    \caption{Histograma donde se compara la suma de los costos de las soluciones encontradas por cada configuración. Se consideran dos factores: el costo total y la distancia. El primero es el valor objetivo, el segundo es un valor que es deseable que sea mínimo}.
     \label{cmphistogram}
   \end{figure}
 
   \subsubsection*{Calibración de búsquedas locales}
 
-  Con los parámetros de la sección anterior ya configurados, se procedió a investigar el comportamiento de la búsqueda local respecto a {\it first/best improvement}. Se generaron las ocho combinaciones posibles de los tres parámetros booleanos y se realizaron las ejecuciones tomando $LocalSearchMaxiter = 1000$ (ver \ref{grasp}). Como resultado no se vió mayor diferencia en ninguna de las ejecuciones. Ocurrieronme dos explicaciones para esto: que el tamaño de las instancias es demasiado chico para podes; que la cantidad de iteraciones $LocalSearchMaxiter$ haga que el se comporten igual. Se decidió elegir la configuración mas rápida, es decir {\it first improvement} par las tres variables.
+  Con los parámetros de la sección anterior ya configurados, se procedió a investigar el comportamiento de la búsqueda local respecto a {\it first/best improvement}. Se generaron las ocho combinaciones posibles de los tres parámetros booleanos y se realizaron las ejecuciones tomando $LocalSearchMaxiter = 1000$ (ver \ref{grasp}). Como resultado no se vió mayor diferencia en ninguna de las ejecuciones. Ocurrieronme tres explicaciones para esto: que el tamaño de las instancias es demasiado chico para podes; que la cantidad de iteraciones $LocalSearchMaxiter$ haga que se comporten igual es decir que el moverse por la primera mejora reiteradas veces converja a la mejor mejora; por último, que la cantidad de vecinos de una solución no sean relativamente pocos. Luego de analizar los logs de ejecución utilizando {\it best improvement} en los tres parámetros, se pudo confirmar el último caso. Ocurre que tanto para instancias de 25 nodos como de 100, las vecindades definidas no tienen tamaño mayor a 5 instancias, siendo en promedio 1.
+  
+  Se decidió elegir la configuración mas rápida, es decir {\it first improvement} par los tres parámetros.
 
   \section*{Resultados}
 

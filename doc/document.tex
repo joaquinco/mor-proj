@@ -25,13 +25,13 @@
 
   \section*{Introducción}
 
-  En este documento se presenta un GRASP como metaheurístca para el problema de ruteo de vehículos (VRP) con ventanas de tiempo y flota heterogénea, basandose en el modelo fomulado por (\ref{inco}) y en los modelos y resultados de problemas similares estudiados por Solomon (\ref{solomon}) y Jiang (\ref{jiang}).
+  En este documento se presenta un GRASP como metaheurístca para el problema de ruteo de vehículos (VRP) con ventanas de tiempo y flota heterogénea, basándose en el modelo fomulado por (\ref{inco}) y en los modelos y resultados de problemas similares estudiados por Solomon (\ref{solomon}) y Jiang (\ref{jiang}).
 
   El GRASP desarrollado permite encontrar soluciones a estos modelos siendo estas en algunos casos muy cercanas al óptimo.
 
   \section*{Problema}
 
-  El problema que se quiere resolver es un clásico VRP con el adicionado de ventanas flexibles, esto quiere decir que los vehiculos pueden atender los clientes luego de finalizada la ventana de tiempo pagando cierta penalidad. Considerar esto es de utilidad ya que pueden encontontrarse soluciones cuyo costo es significativamente menor al de un VRP con ventana fija y puede tener sentido práctico en ciertos contextos.
+  El problema que se quiere resolver es un clásico VRP con el adicionado de ventanas flexibles, esto quiere decir que los vehículos pueden atender los clientes luego de finalizada la ventana de tiempo pagando cierta penalidad. Considerar esto es de utilidad ya que pueden encontrarse soluciones cuyo costo es significativamente menor al de un VRP con ventana fija y puede tener sentido práctico en ciertos contextos.
 
   \subsection*{Representación}
 
@@ -86,7 +86,7 @@
     \caption{Algorítmo GRASP \label{grasp}}
   \end{algorithm}
 
-  El desarrollo y ajuste de parámetros se realizó ejecutando 18 de las instancias del dataset Solomon de 25 nodos para las cuales se tienen valores óptimos o muy buenos de soluciones tanto para ventana fija como para ventana flexible.
+  El desarrollo y ajuste de parámetros se realizó ejecutando 18 de las instancias del dataset Solomon de 25 nodos para las cuales se tienen valores de soluciones óptimos para ventana fija y óptimos ó muy buenos para ventana flexible.
 
   \subsection*{Fase de construcción}
 
@@ -203,15 +203,84 @@
 
   \section*{Resultados}
 
+  Luego de calibrar un poco el algorítmo, se realizaron pruebas con instancias de 100 nodos, para algunas de las cuales existen resultados exactos en caso de ventana fija. También se detallan los resultados de la ejecución en las instancias de 25 nodos en los cuadros (\ref{table:res25nodesfixed}) para ventana fija y (\ref{table:res25nodesflexible}) para ventana flexible, comparando contra las los mejores valores de soluciones que se encuentran disponibles.
+
+  La configuración de las ejecuciones del GRASP fueron $500000$ iteraciones para las intancias de 25 nodos y $100000$ para las de 100, con $20$ hilos de ejecución y un parámetro $\alpha$ de la RCL de $0.8$.
+
+  \begin{table}
+    \centering
+    \caption*{{\bf 25 nodos - Ventana fija}}
+    \begin{tabular}{cccc}
+      \toprule
+      Instancia & Óptimo & Solución GRASP & Error (\%) \\
+      \midrule
+      \bottomrule
+    \end{tabular}
+    \caption{Comparativa de resultados contra el óptimo. En este caso el valor de la solución es la distancia total de los recorridos.}\label{table:res25nodesfixed}
+  \end{table}
+
+  \begin{table}
+    \centering
+    \caption*{{\bf 25 nodos - Ventana flexible}}
+    \begin{tabular}{cccc}
+      \toprule
+      Instancia & Mejor Solución & Solución GRASP & Error (\%) \\
+      \midrule
+      C101.25  &  431.7	 & 431.81 &	0.03  \\
+      C102.25  &  430.6	 & 430.73 &	0.03 \\
+      C103.25  &  430.6	 & 431.95 &	0.31 \\
+      C201.25  &  375.6	 & 375.54 &	-0.02 \\
+      C202.25  &  303.4	 & 375.54 &	23.78 \\
+      C203.25  &  303.4	 & 376.39 &	24.06 \\
+      R101.25  &  1167.2 & 1180.6 &  1.15 \\
+      R102.25  &  598.5	 & 594.35 &	-0.69 \\
+      R103.25  &  771.51 & 850.55 &	10.25 \\
+      R201.25  &  639.5	 & 624.70 &	-2.31 \\
+      R202.25  &  555.5	 & 577.12 &	3.89 \\
+      R203.25  &  560.8	 & 561.72 &	0.17 \\
+      RC101.25 &  600.7	 & 598.96 &	-0.29 \\
+      RC102.25 &  574	   & 575.79 &	0.31 \\
+      RC103.25 &  567.1	 & 569.08 &	0.35 \\
+      RC201.25 &  565.9	 & 558.13 &	-1.37 \\
+      RC202.25 &  516.2	 & 512.32 &	-0.75 \\
+      RC203.25 &  517.2	 & 505.49 &	-2.26 \\
+      \bottomrule
+    \end{tabular}
+    \caption{Comparativa de resultados con ventana flexible. El valor de las soluciones en este caso es la suma de costos fijos y costos variables de los vehículos. A excepción de dos instancias, los resultados parecen ser muy buenos e incluso mejorando las soluciones provistas en las últimas filas.}\label{table:res25nodesflexible}
+  \end{table}
+
   \section*{Conclusión}
+
+  Se concluye que el la metaheurístca implementada se desempeña correctamente y es suficientemente configurable para sacar buen provecho de ella con algún trabajo de análisis sobre los parámetros.
 
   \section*{Trabajo a futuro}
 
   \subsection*{Mejor consideración de movimientos por vehículo}
   
-  En la implementación de este trabajo, la cantidad de movimientos por vehículo a incluir en la RCL es un parámetro del modelo. Se podría tomar enfoque mas inteligente y tomar una cantidad variable de movimientos dependiendo que tan buenos sean estos, por ejemplo, de la misma manera que se construya la RCl.
+  En la implementación de este trabajo, la cantidad de movimientos por vehículo a incluir en la RCL está dada por el parámetro $MovesPerVehicle$. Se podría tomar enfoque mas inteligente y considerar una cantidad variable de movimientos dependiendo que tan buenos sean estos, por ejemplo, con un parámetro $\alpha$, de la misma manera que se construye la RCL.
+
+  \subsection*{Mejor calibración del GRASP}
+
+  En este trabajo se mencionó la calibración de algunos parámetros pero el algorítmo implementado tiene algunos más que puede ser útil investigar. Algunos de estos son: el $\alpha$ de la RCL; $MovesPerVehicle$; $MaxWaitTime$ utilizado para descartar soluciones con cierto tiempo de espera, un valor bajo de este parámetro puede reducir drásticamente el espacio de búsqueda, por ejemplo, Solomon (\ref{solomon}) considera los valores 30, 60 y 120.
+
+  \subsection*{Ejecuciones de mayor escala}
+
+  Las ejecuciones consideradas en este trabajo rondan en el orden de horas y utilizan 20 núcleos de CPU, se podrían considerar ejecuciones con limites mucho mayores de tiempo y posiblemente abarcar un mayor espacio de búsqueda.
+
+  \subsection*{Detención temprana}
+
+  Como manera de ahorrar tiempo de ejecución se puede implementar un mecanismo de detención temprana, por ejemplo, si no se ha mejorado la solución en $X$ iteraciones.
 
   \section*{Implementación}
+
+  La implementación del GRASP y programas utilitarios se encuentra en el repositorio público (\ref{repo}). Se utilizó el lenguaje Rust para el GRASP puntualmente ya que es un lenguaje compilado de alto desempeño y python para procesamiento de los resultados.
+
+  Las instrucciones de ejecución del GRASP principal se detallan en el repositorio. Luego se proveen alguns scripts python:
+  \begin{description}
+    \item[summarize.py]: Script que dados varios archivos con soluciones, genera un csv con los principales aspectos de las soluciones: costo total, distancia, cantidad de vehículos, nombre de la instancia.
+    \item[validate.py]: Script que valida un archivo de solución. Utilizado principalmente durante el desarrollo para asegurarse que las soluciones generadas sean factibles.
+    \item[draw.py]: Script que dibuja las rutas dado un archivo solución.
+  \end{description}
 
   \section*{Referencias}
 

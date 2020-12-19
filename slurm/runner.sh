@@ -27,7 +27,7 @@ TMP_LOG_FILE=$(mktemp -u -p /scratch/joaquin.correa/ --suffix "_$JOB_NAME-$(date
 
 cd $PROJECT_HOME
 
-./bin/run.sh $DATASET_PATH > $TMP_LOG_FILE 2>&1
+./bin/run.sh $DATASET_PATH | tee $TMP_LOG_FILE 2>&1
 
 python utils/summarize.py $OUTPUT_PATH/*.json > $OUTPUT_PATH/summary_$JOB_HOME.csv
 

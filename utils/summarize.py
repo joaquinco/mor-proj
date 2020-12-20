@@ -22,6 +22,15 @@ def print_all(data):
     ])
 
 
+def get_max_wait_time(solution):
+  """
+  Return maximun wait time of all route entries.
+  """
+  return max(*[
+    max(*[c.get('wait_time') for c in route.get('clients')])
+    for route in solution.get('routes')
+  ])
+
 def process_solution(data):
   """
   Given a solution file, returns a dictionary with the main data.
@@ -34,6 +43,7 @@ def process_solution(data):
     distance=solution.get('distance'),
     solution_value=solution.get('value'),
     number_of_vehicles=len(solution.get('routes')),
+    max_wait_time=get_max_wait_time(solution),
     iter_found=solution.get('iter_found'),
   )
 

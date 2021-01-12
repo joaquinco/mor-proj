@@ -13,7 +13,7 @@ use crate::types::{
   Time,
 };
 use crate::utils::time_max;
-use super::utils::{alpha_rcl_choose, transform_solution};
+use super::utils::{alpha_rcl_choose, alpha_max_index, transform_solution};
 use super::local_search::{LocalSearch, LocalSearchNotFound};
 use super::insertion_search::insertion_search;
 use super::opt2_search::opt2_search;
@@ -26,7 +26,7 @@ pub struct GraspConfig {
   wait_time_weight: f64,
   rcl_alpha: f64,
   rcl_min_size: usize,
-  moves_per_vehicle: usize,
+  moves_per_vehicle_alpha: f64,
   max_wait_time: Time,
   local_search_iters: i32,
   local_search_first_improvement: bool,
@@ -45,7 +45,7 @@ impl Default for GraspConfig {
       wait_time_weight: 0.2,
       rcl_alpha: 0.3,
       rcl_min_size: 1,
-      moves_per_vehicle: 1,
+      moves_per_vehicle_alpha: 0.3,
       max_wait_time: 10000 as Time,
       local_search_iters: 100,
       local_search_first_improvement: true,
@@ -307,10 +307,17 @@ impl Grasp {
         move_list.push(BasicMove(*client_id, move_cost));
       }
 
-      /* Sort moves by cost and select the <moves_per_vehicle> bests */
+      /* Sort moves by cost and select the ones no worse than
+       * c_min + (c_max - c_min) * moves_per_vehicle_alpha
+       */
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());
 
-      for index in 0..cmp::min(self.config.moves_per_vehicle, move_list.len()) {
+      let move_costs: Vec<f64> = move_list.iter().map(|BasicMove(_, c)| *c).collect();
+      let moves_per_vehicle = alpha_max_index(
+        &move_costs, self.config.moves_per_vehicle_alpha,
+      ).unwrap_or(0) + 1;
+
+      for index in 0..cmp::min(moves_per_vehicle, move_list.len()) {
         let BasicMove(client_id, cost) = move_list[index];
         ret.push(GraspRouteMove {
           cost: cost,

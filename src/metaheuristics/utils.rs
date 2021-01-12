@@ -21,13 +21,10 @@ pub fn sized_rcl_choose<'a, T>(list: &'a Vec<T>, size: usize) -> Option<&'a T> {
   }
 }
 
-/// Assumes the list is sorted
-/// Returns an entry of the list assuming the entries that satisfy:
-/// c_min <= cost <= c_min + (c_max - c_min) * alpha
-#[allow(dead_code)]
-pub fn alpha_rcl_choose<'a, T: std::fmt::Debug>(
-  list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64, min_size: usize,
-) -> Option<&'a T> {
+
+// Return the index of the maximun item that satisfies that:
+// cost item belongs to [c_min, c_min + (c_max - c_min) * alpha) 
+pub fn alpha_max_index(costs: &Vec<f64>, alpha: f64) -> Option<usize> {
   let c_min: f64;
 
   match costs.first() {
@@ -55,9 +52,22 @@ pub fn alpha_rcl_choose<'a, T: std::fmt::Debug>(
       max_index = index;
     }
   }
-  max_index = cmp::min(cmp::max(max_index, min_size), list.len());
 
-  sized_rcl_choose(list, max_index)
+  Some(max_index)
+}
+
+/// Assumes the list is sorted
+/// Returns an entry of the list assuming the entries that satisfy:
+/// c_min <= cost <= c_min + (c_max - c_min) * alpha
+#[allow(dead_code)]
+pub fn alpha_rcl_choose<'a, T>(
+  list: &'a Vec<T>, costs: &Vec<f64>, alpha: f64, min_size: usize,
+) -> Option<&'a T> {
+  if let Some(max_index) = alpha_max_index(&costs, alpha) {
+    sized_rcl_choose(list, cmp::min(cmp::max(max_index, min_size), list.len()))
+  } else {
+    None
+  }
 }
 
 /// Returns an entry of the list from the list elements given the probability
@@ -71,7 +81,6 @@ pub fn weighted_choose<'a, T>(list: &'a Vec<T>, weights: Vec<f64>) -> Option<&'a
     Ok((_, value)) => Some(value),
   }
 }
-
 
 ///
 /// Creates a new solution by replacing the two routes

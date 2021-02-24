@@ -1,6 +1,5 @@
 {
   "iters": 100000,
-  "report_every": 10000,
   "number_of_threads": 4,
   "grasp_config": {
     "distance_weight": 0.7,

@@ -1,4 +1,4 @@
-use std::{fmt, cmp, collections::{HashSet, HashMap}};
+use std::{fmt, collections::{HashSet, HashMap}};
 use std::iter::Iterator;
 
 use serde::{Serialize, Deserialize};
@@ -26,6 +26,7 @@ pub struct GraspConfig {
   wait_time_weight: f64,
   rcl_alpha: f64,
   rcl_min_size: usize,
+  moves_per_vehicle_min_size: usize,
   moves_per_vehicle_alpha: f64,
   max_wait_time: Time,
   local_search_iters: i32,
@@ -45,7 +46,8 @@ impl Default for GraspConfig {
       wait_time_weight: 0.2,
       rcl_alpha: 0.3,
       rcl_min_size: 1,
-      moves_per_vehicle_alpha: 0.3,
+      moves_per_vehicle_min_size: 2,
+      moves_per_vehicle_alpha: 0.05,
       max_wait_time: 10000 as Time,
       local_search_iters: 100,
       local_search_first_improvement: true,
@@ -313,11 +315,19 @@ impl Grasp {
       move_list.sort_by(|BasicMove(_, c1), BasicMove(_, c2)| c1.partial_cmp(c2).unwrap());
 
       let move_costs: Vec<f64> = move_list.iter().map(|BasicMove(_, c)| *c).collect();
-      let moves_per_vehicle = alpha_max_index(
-        &move_costs, self.config.moves_per_vehicle_alpha,
-      ).unwrap_or(0) + 1;
+      let moves_per_vehicle = {
+        let alpha_moves = alpha_max_index(
+          &move_costs, self.config.moves_per_vehicle_alpha,
+        ).unwrap_or(0) + 1;
 
-      for index in 0..cmp::min(moves_per_vehicle, move_list.len()) {
+        alpha_moves.max(self.config.moves_per_vehicle_min_size).min(move_list.len())
+      };
+
+      if moves_per_vehicle > 0 {
+        debug!("Vehicle #{} pushing {} moves to RCL", vroute.vehicle_id, moves_per_vehicle);
+      }
+
+      for index in 0..moves_per_vehicle {
         let BasicMove(client_id, cost) = move_list[index];
         ret.push(GraspRouteMove {
           cost: cost,

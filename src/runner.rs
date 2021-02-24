@@ -29,18 +29,20 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
     match best.as_ref() {
       None => best = Some(sol),
       Some(current) => {
-        let current_value = current.value;
-        if current_value > sol.value {
+        if current.value > sol.value {
+          info!(
+            "Thread #{} - iteration={} best_value={} construction_value={}",
+            thread_id, config.iters - iteration, &current.value, &current.construction_value,
+          );
           best = Some(sol);
-          info!("Thread #{} - iteration #{}, best value: {}", thread_id, config.iters - iteration, current_value);
         }
       }
     }
   }
 
   if error_count > 0 {
-    error!("Thread #{} - solution not found on {} iterations", thread_id, error_count);
-    error!("Thread #{} - last error was: {}", thread_id, last_error);
+    error!("Thread #{} - solution_not_found_iters={}", thread_id, error_count);
+    error!("Thread #{} - last_error={}", thread_id, last_error);
   }
 
   best

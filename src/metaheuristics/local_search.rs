@@ -43,7 +43,7 @@ impl LocalSearch {
 
     if ret.is_some() {
       debug!(
-        "LocalSearch best, first, explored: {}, {}, {}",
+        "ls_best={}, ls_first={}, ls_explored={}",
         best_value, first_value.unwrap(), solutions_found
       );
     }

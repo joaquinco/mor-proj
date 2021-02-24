@@ -251,6 +251,8 @@ impl Grasp {
     }
 
     problem.evaluate_sol(&mut sol);
+    sol.construction_value = sol.value.clone();
+
     Ok(sol)
   }
 
@@ -324,7 +326,7 @@ impl Grasp {
       };
 
       if moves_per_vehicle > 0 {
-        debug!("Vehicle #{} pushing {} moves to RCL", vroute.vehicle_id, moves_per_vehicle);
+        debug!("vehicle={} moves_per_vehicle={}", vroute.vehicle_id, moves_per_vehicle);
       }
 
       for index in 0..moves_per_vehicle {

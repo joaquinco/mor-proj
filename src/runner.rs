@@ -31,7 +31,7 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
       Some(current) => {
         if current.value > sol.value {
           info!(
-            "Thread #{} - iteration={} best_value={} construction_value={}",
+            "thread={} iteration={} best_value={} construction_value={}",
             thread_id, config.iters - iteration, &current.value, &current.construction_value,
           );
           best = Some(sol);
@@ -41,8 +41,8 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
   }
 
   if error_count > 0 {
-    error!("Thread #{} - solution_not_found_iters={}", thread_id, error_count);
-    error!("Thread #{} - last_error={}", thread_id, last_error);
+    error!("thread={} solution_not_found_iters={}", thread_id, error_count);
+    error!("thread={} last_error={}", thread_id, last_error);
   }
 
   best

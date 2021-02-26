@@ -8,7 +8,7 @@ export JOB_NAME=$SLURM_JOB_NAME
 export JOB_ID=$SLURM_JOB_ID
 
 # Data needed by the run.sh
-export NAME_SUFFIX="$JOB_NAME_$JOB_ID"
+export NAME_SUFFIX="${JOB_NAME}_${JOB_ID}"
 export OUTPUT_PATH="$JOB_HOME/output/$NAME_SUFFIX"
 export HEURISTIC_CONFIG="$JOB_HOME/runconfig/$JOB_NAME.json"
 if [ ! -n "$DATASET_PATH" ]; then

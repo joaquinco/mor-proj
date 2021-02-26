@@ -70,7 +70,7 @@ fn save_output(output: &Output, path: &str) -> Result<(), Box<dyn Error>> {
 
 fn main() {
   let args = parse_args();
-  logger::set_level(args.value_of("log_level").unwrap_or("debug"));
+  logger::set_level(args.value_of("log_level").unwrap_or("info"));
 
   debug!("Starting {}", APP_NAME);
 

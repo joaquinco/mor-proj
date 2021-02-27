@@ -32,7 +32,7 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
         if current.value > sol.value {
           info!(
             "thread={} iteration={} best_value={} construction_value={}",
-            thread_id, config.iters - iteration, &current.value, &current.construction_value,
+            thread_id, config.iters - iteration, &sol.value, &sol.construction_value,
           );
           best = Some(sol);
         }

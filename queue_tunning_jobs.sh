@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# tunnning jobs can be queued 50 per time
-
 logfile='tunning_scheduled_jobs.log'
 
 touch $logfile
@@ -16,7 +14,7 @@ for job_id in $(seq 0 21); do
 
         sbatch tunning_job_${job_id}.sh
         if [ $? -eq 0 ]; then
-            echo $execution_name >> $logfile
+            echo "$execution_name" >> $logfile
         else
             echo "Stopped at $execution_name"
             exit 1

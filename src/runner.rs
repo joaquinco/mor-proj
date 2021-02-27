@@ -12,6 +12,7 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
 
   while iteration != 0 {
     iteration -= 1;
+    let current_iter = config.iters - iteration;
 
     let sol = match mh.iterate(&instance) {
       Err(error) => {
@@ -20,7 +21,7 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
         continue;
       },
       Ok(mut value) => {
-        value.iter_found = iteration;
+        value.iter_found = current_iter;
         value
       },
     };
@@ -32,7 +33,7 @@ fn do_run(thread_id: i32, config: &Config, instance: &ProblemInstance) -> Option
         if current.value > sol.value {
           info!(
             "thread={} iteration={} best_value={} construction_value={}",
-            thread_id, config.iters - iteration, &sol.value, &sol.construction_value,
+            thread_id, current_iter, &sol.value, &sol.construction_value,
           );
           best = Some(sol);
         }

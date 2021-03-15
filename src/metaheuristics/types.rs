@@ -5,12 +5,19 @@ use serde_json;
 
 use crate::types::{Time, ProblemInstance, RouteEntryClient};
 
-#[serde(default)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GraspConfig {
+pub struct GraspWeightConfig {
   pub time_weight: f64,
   pub distance_weight: f64,
   pub wait_time_weight: f64,
+  pub config_weight: f64,
+  pub display_name: String,
+}
+
+#[serde(default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GraspConfig {
+  pub weight_configs: Vec<GraspWeightConfig>,
   pub rcl_alpha: f64,
   pub rcl_min_size: usize,
   pub moves_per_vehicle_min_size: usize,
@@ -28,9 +35,36 @@ pub struct GraspConfig {
 impl Default for GraspConfig {
   fn default() -> GraspConfig {
     GraspConfig {
-      time_weight: 0.1,
-      distance_weight: 0.7,
-      wait_time_weight: 0.2,
+      weight_configs: vec![
+        GraspWeightConfig {
+          time_weight: 0.2,
+          distance_weight: 0.3,
+          wait_time_weight: 0.5,
+          config_weight: 0.2,
+          display_name: String::from("9"),
+        },
+        GraspWeightConfig {
+          time_weight: 0.2,
+          distance_weight: 0.5,
+          wait_time_weight: 0.3,
+          config_weight: 0.3,
+          display_name: String::from("13"),
+        },
+        GraspWeightConfig {
+          time_weight: 0.0,
+          distance_weight: 0.5,
+          wait_time_weight: 0.5,
+          config_weight: 0.2,
+          display_name: String::from("14"),
+        },
+        GraspWeightConfig {
+          time_weight: 0.1,
+          distance_weight: 0.7,
+          wait_time_weight: 0.2,
+          config_weight: 0.3,
+          display_name: String::from("17"),
+        }
+      ],
       rcl_alpha: 0.3,
       rcl_min_size: 1,
       moves_per_vehicle_min_size: 2,

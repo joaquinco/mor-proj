@@ -9,11 +9,16 @@ use crate::types::{
   Time,
 };
 use crate::utils::time_max;
-use super::utils::{alpha_rcl_choose, alpha_max_index, transform_solution};
+use super::utils::{
+  alpha_rcl_choose,
+  alpha_max_index,
+  transform_solution,
+  weighted_choose,
+};
 use super::local_search::{LocalSearch, LocalSearchNotFound};
 use super::insertion_search::insertion_search;
 use super::opt2_search::opt2_search;
-use super::types::{GraspConfig, GraspRouteMove, GraspRoute};
+use super::types::{GraspConfig, GraspWeightConfig, GraspRouteMove, GraspRoute};
 
 
 #[derive(Debug, Clone)]
@@ -121,8 +126,13 @@ impl Grasp {
       .map(|index| index.to_owned())
       .collect();
 
+    let weight_config: GraspWeightConfig = weighted_choose(
+      &self.config.weight_configs,
+      self.config.weight_configs.iter().map(|c| c.config_weight).collect(),
+    ).unwrap().clone();
+
     while !all_clients.is_empty() {
-      let mut moves = self.get_possible_moves(&vehicle_routes, &all_clients, &problem);
+      let mut moves = self.get_possible_moves(&vehicle_routes, &all_clients, &problem, &weight_config);
 
       moves.sort_by(|m1, m2| m1.cost.partial_cmp(&m2.cost).unwrap());
 
@@ -142,7 +152,7 @@ impl Grasp {
       };
     }
 
-    let mut sol: Solution = Default::default();
+    let mut sol: Solution = Solution { weight_config_name: weight_config.display_name, ..Default::default() };
 
     for vehicle in problem.vehicles.iter() {
       let vroute = vehicle_routes.get_mut(&vehicle.id).unwrap();
@@ -190,7 +200,8 @@ impl Grasp {
     &self,
     vehicle_routes: &HashMap<usize, GraspRoute>,
     available_clients: &HashSet<usize>,
-    problem: &ProblemInstance
+    problem: &ProblemInstance,
+    weights: &GraspWeightConfig,
   ) -> Vec<GraspRouteMove> {
     let mut ret: Vec<GraspRouteMove> = vec![];
 
@@ -221,7 +232,14 @@ impl Grasp {
           continue
         }
 
-        let move_cost = self.compute_move_cost(problem, vroute, *client_id, arrival_time, wait_time);
+        let move_cost = self.compute_move_cost(
+          problem,
+          weights,
+          vroute,
+          *client_id,
+          arrival_time,
+          wait_time
+        );
         move_list.push(BasicMove(*client_id, move_cost));
       }
 
@@ -262,6 +280,7 @@ impl Grasp {
   fn compute_move_cost(
     &self,
     problem: &ProblemInstance,
+    weights: &GraspWeightConfig, 
     vroute: &GraspRoute,
     client_to: usize,
     arrival_time: Time,
@@ -280,9 +299,9 @@ impl Grasp {
     let overtime = time_max(arrival_time - client.latest, 0 as Time);
 
     fixed_cost
-    + self.config.distance_weight * distance * vehicle.variable_cost as f64
-    + self.config.time_weight * close_proximity_time as f64
-    + self.config.wait_time_weight * wait_time as f64
+    + weights.distance_weight * distance * vehicle.variable_cost as f64
+    + weights.time_weight * close_proximity_time as f64
+    + weights.wait_time_weight * wait_time as f64
     + problem.deviation_penalty * overtime as f64
   }
 

@@ -51,9 +51,9 @@ impl Default for GraspConfig {
           display_name: String::from("13"),
         },
         GraspWeightConfig {
-          time_weight: 0.0,
+          time_weight: 0.3,
           distance_weight: 0.5,
-          wait_time_weight: 0.5,
+          wait_time_weight: 0.2,
           config_weight: 0.2,
           display_name: String::from("14"),
         },

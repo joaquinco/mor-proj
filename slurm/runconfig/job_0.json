@@ -1,9 +1,22 @@
 {
     "iters": 500000,
     "grasp_config": {
-      "time_weight": 0.1,
-      "distance_weight": 0.7,
-      "wait_time_weight": 0.2,
+      "weight_configs": [
+        {
+          "time_weight": 0.2,
+          "distance_weight": 0.3,
+          "wait_time_weight": 0.5,
+          "config_weight": 0.9,
+          "display_name": "Highly likely"
+        },
+        {
+          "time_weight": 0.2,
+          "distance_weight": 0.5,
+          "wait_time_weight": 0.3,
+          "config_weight": 0.1,
+          "display_name": "Unlikely"
+        }
+      ],
       "rcl_alpha": 0.3,
       "rcl_min_size": 1,
       "moves_per_vehicle_alpha": 0.05,

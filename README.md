@@ -63,9 +63,23 @@ And a sample configuration file:
   "iters": 300,
   },
   "grasp_config": {
-    "time_weight": 0.0,
-    "demand_weight": 0.0,
-    "distance_weight": 0.9
+    "local_search_iters": 10,
+    "weight_configs": [
+      {
+        "time_weight": 0.2,
+        "distance_weight": 0.3,
+        "wait_time_weight": 0.5,
+        "config_weight": 0.9,
+        "display_name": "Highly likely"
+      },
+      {
+        "time_weight": 0.2,
+        "distance_weight": 0.5,
+        "wait_time_weight": 0.3,
+        "config_weight": 0.1,
+        "display_name": "Unlikely"
+      }
+    ]
   }
 }
 ```

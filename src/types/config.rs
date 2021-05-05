@@ -12,6 +12,7 @@ pub struct Config {
   pub iters: i32,
   pub grasp_config: GraspConfig,
   pub number_of_threads: i32,
+  pub optimize_cost: bool,
 }
 
 impl Default for Config {
@@ -20,6 +21,7 @@ impl Default for Config {
       iters: 10,
       grasp_config: Default::default(),
       number_of_threads: 1,
+      optimize_cost: true,
     }
   }
 }

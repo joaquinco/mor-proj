@@ -90,7 +90,7 @@ fn main() {
     Err(e) => panic!("Error reading instance file {}", e),
   };
 
-  instance.init();
+  instance.init(config.optimize_cost);
   instance.validate().unwrap();
   let result = runner::run(&config, &instance);
   let sol;

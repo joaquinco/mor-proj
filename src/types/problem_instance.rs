@@ -37,18 +37,23 @@ impl Default for ProblemInstance {
 }
 
 impl ProblemInstance {
-  pub fn init(&mut self) {
+  pub fn init(&mut self, optimize_cost: bool) {
     if self.inited {
       return
     }
 
-    self.init_vehicles();
+    self.init_vehicles(optimize_cost);
     self.init_clients();
 
     self.inited = true;
   }
 
-  fn init_vehicles(&mut self) {
+  /**
+   * Initializes vehicles, if optimize cost is false
+   * then optimization is over distance, this means
+   * that fixed cost is zero and variable cost is 1.
+   */
+  fn init_vehicles(&mut self, optimize_cost: bool) {
     let mut max: usize = 0;
 
     let vehicles: Vec<Vehicle> = self.vehicle_definitions.iter().flat_map(|vehicle_def| {
@@ -58,8 +63,14 @@ impl ProblemInstance {
         Vehicle {
           id: id,
           capacity: vehicle_def.capacity,
-          fixed_cost: vehicle_def.fixed_cost,
-          variable_cost: vehicle_def.variable_cost,
+          fixed_cost: {
+            if optimize_cost { vehicle_def.fixed_cost }
+            else { 1.0 }
+          },
+          variable_cost: {
+            if optimize_cost { vehicle_def.variable_cost }
+            else { 1.0 }
+          }
         }
       })
     }).collect();

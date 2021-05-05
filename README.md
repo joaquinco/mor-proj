@@ -4,11 +4,13 @@
 
 The problem we are trying to solve here is the Vehicle routing problem with a heterogeneous fleet and time windows. It's a vehicle routing problem where vehicles need to visit clients to satisfy their demand withing a fixed time window. All vehicles depart from and arrive to the same node (the deposit).
 
+Optimization can be made over cost: sum of fixed cost plus variable cost * distance for each vehicle, or over distance: sum of the route distance for each vehicle. This behavior is specified by the configuration entry `optimize_cost: {true|false}`, the default is true.
+
 ## Software requirements
 
 - rust: 1.4X
 
-## Development
+## Debug
 
 To compile and run the program just run:
 
@@ -16,7 +18,7 @@ To compile and run the program just run:
 cargo run
 ```
 
-## Production build
+## Release build
 
 ### Compilation
 
@@ -61,7 +63,7 @@ And a sample configuration file:
 ```json
 {
   "iters": 300,
-  },
+  "number_of_threads": 4,
   "grasp_config": {
     "local_search_iters": 10,
     "weight_configs": [

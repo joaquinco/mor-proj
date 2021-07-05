@@ -5,14 +5,14 @@ import os
 
 tunning_jobs_runconfig_dir = 'runconfig'
 tunning_jobs_log_dir = 'output'
-log_output = 'tunning_jobs_log.csv'
+log_output = 'validator_jobs_log.csv'
 runconfig_output = 'tunning_jobs_runconfigs.csv'
 
 
 instance_name_re = r'Instance\s+name:\s+(.*)'
 
-# 2021-02-27 12:21:19.562601685 -03:00 | INFO | thread=1 iteration=5 best_value=591.8136197786562 construction_value=936.6249597884628
-execution_log_re = r'([\d-]+\s[\d:]+\.\d+\s-?[\d:]+)\s\|\s(\w+)\s\|\sthread=(\d+)\siteration=(\d+)\sbest_value=([\d\.]+)\sconstruction_value=([\d\.]+)'
+# 2021-02-27 12:21:19.562601685 -03:00 | INFO | thread=1 iteration=5 best_value=591.8136197786562 construction_value=936.6249597884628 weight_config=...
+execution_log_re = r'([\d-]+\s[\d:]+\.\d+\s-?[\d:]+)\s\|\s(\w+)\s\|\sthread=(\d+)\siteration=(\d+)\sbest_value=([\d\.]+)\sconstruction_value=([\d\.]+)\sweight_config=(.*)'
 
 class LoopState:
   WaitingInstance = 'WaitingInstance'
@@ -23,13 +23,13 @@ def add_tunning_logs(csv_writer, job_run_numbers, tunning_job_dir):
   Parse tunning job execution log and add them to csv
   """
   job_name = os.path.basename(tunning_job_dir)
-  match = re.match(r'tunning_job_(\d+)_(\d+)', job_name)
+  match = re.match(r'validator_job_(\d+)', job_name)
   if not match:
     print(f'Ignoring unexpected tunning job dir {tunning_job_dir}')
     return
 
-  job_config_id = match[1]
-  slurm_job_id = match[2]
+  slurm_job_id = match[1]
+  job_config_id = 0
   
   job_run_numbers[job_config_id] = job_run_numbers.get(job_config_id, 0) + 1
   job_run_number = job_run_numbers[job_config_id]
@@ -54,15 +54,16 @@ def add_tunning_logs(csv_writer, job_run_numbers, tunning_job_dir):
           iteration = execution_log_match[4]
           sol_value = execution_log_match[5]
           construction_value = execution_log_match[6]
+          weight_config = execution_log_match[7]
 
           csv_writer.writerow({
             'slurm_job_id': slurm_job_id,
             'job_run_number': job_run_number,
-            'job_config_id': job_config_id,
             'timestamp': timestamp,
             'instance_name': instance_name,
             'sol_value': sol_value,
             'construction_value': construction_value,
+            'weight_config': weight_config,
             'iteration': iteration,
           })
         elif 'Writing output to' in line:
@@ -78,11 +79,11 @@ def collect_logs():
   fieldnames = [
     'slurm_job_id',
     'job_run_number',
-    'job_config_id',
     'timestamp',
     'instance_name',
     'sol_value',
     'construction_value',
+    'weight_config',
     'iteration'
   ]
   writer = csv.DictWriter(output_logfile, fieldnames=fieldnames)

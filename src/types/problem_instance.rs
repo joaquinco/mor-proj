@@ -4,8 +4,8 @@ use serde::{Serialize, Deserialize};
 use crate::utils::time_max;
 use super::{Vehicle, VehicleDefinition, Client, Solution, Time, Cost, RouteEntry, RouteEntryClient};
 
-#[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ProblemInstance {
   pub name: String,
   pub source: usize,

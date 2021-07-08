@@ -8,7 +8,7 @@ Optimization can be made over cost: sum of fixed cost plus variable cost * dista
 
 ## Software requirements
 
-- rust: 1.4X
+- rust: 1.4.X,1.5.X
 
 ## Debug
 

@@ -14,8 +14,8 @@ pub struct GraspWeightConfig {
   pub display_name: String,
 }
 
-#[serde(default)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct GraspConfig {
   pub weight_configs: Vec<GraspWeightConfig>,
   pub rcl_alpha: f64,

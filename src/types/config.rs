@@ -6,8 +6,8 @@ use crate::metaheuristics::GraspConfig;
 
 use super::{ProblemInstance, Solution};
 
-#[serde(default)]
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Config {
   pub iters: i32,
   pub grasp_config: GraspConfig,

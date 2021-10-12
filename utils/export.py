@@ -158,12 +158,14 @@ def extract_vehicle_definitions(content):
     return ret
 
 
-def export_file_to_config(filename):
+def export_file_to_config(filename, allowed_deviation, deviation_penalty, suffix=''):
     """
     Generates a configuration file from a CIPLEX .m source
     """
     file_base, _ = os.path.splitext(filename)
-    outputname = "{}.json".format(file_base)
+    if suffix:
+        suffix = '_' + suffix
+    outputname = "{}{}.json".format(file_base, suffix)
 
     with open(filename, 'r') as file:
         # File content without comments
@@ -179,21 +181,30 @@ def export_file_to_config(filename):
                 "distances": distances,
                 "clients": clients,
                 "vehicle_definitions": vehicle_definitions,
-                "allowed_deviation": 0.5,
-                "deviation_penalty": 0.1,
+                "allowed_deviation": allowed_deviation,
+                "deviation_penalty": deviation_penalty,
             }))
 
         print(outputname)
 
 
-def main(args):
-    if not args:
-        sys.stderr.write("Error: no files provided\n")
-        sys.exit(1)
+def main(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filenames', help='Matlab files to convert', nargs='+')
+    parser.add_argument('--allowed-deviation', type=float, default=0.5)
+    parser.add_argument('--deviation-penalty', type=float, default=0.1)
+    parser.add_argument('--suffix', default='')
 
-    for filename in args:
+    args = parser.parse_args(argv)
+
+    for filename in args.filenames:
         try:
-            export_file_to_config(filename)
+            export_file_to_config(
+                filename,
+                args.allowed_deviation,
+                args.deviation_penalty,
+                suffix=args.suffix,
+            )
         except InfoNotFoundError as e:
             log_err("Error in file {}: {}".format(filename, e))
 

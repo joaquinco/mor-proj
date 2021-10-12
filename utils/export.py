@@ -55,7 +55,7 @@ def get_distances(clients):
 
 
 graph_regex = re.compile(
-    'datos\s*=\s*\[(((\s*\d+\s*){7};)*(\s*\d+\s*)){7}\];',
+    'datos\s*=\s*\[(((\s*\d+\s*){7};)*(\s*\d*\s*){7})',
     re.MULTILINE,
 )
 
@@ -79,7 +79,8 @@ def extract_graph(content):
     if not match:
         raise InfoNotFoundError("Missing nodes information (datos=[...];")
 
-    node_matches = get_array_content(match.group(0)).split(';')
+    node_matches = list(filter(
+        bool, map(lambda e: e.strip(), get_array_content(match.group(0)).split(';'))))
 
     clients = get_clients(node_matches)
     distances = get_distances(clients)

@@ -174,11 +174,13 @@ impl fmt::Display for ProblemInstance {
       "  name: {}
   vehicles: {}
   nodes: {}
-  allowed excess: {}",
+  allowed excess: {}
+  penalty: {}",
       self.name,
       self.vehicles.len(),
       self.clients.len(),
       self.allowed_deviation,
+      self.deviation_penalty,
     )
   }
 }

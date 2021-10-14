@@ -166,7 +166,8 @@ def export_file_to_config(filename, allowed_deviation, deviation_penalty, suffix
     file_base, _ = os.path.splitext(filename)
     if suffix:
         suffix = '_' + suffix
-    outputname = "{}{}.json".format(file_base, suffix)
+    file_base = "{}{}".format(file_base, suffix)
+    outputname = file_base + ".json"
 
     with open(filename, 'r') as file:
         # File content without comments

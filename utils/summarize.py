@@ -39,9 +39,12 @@ def process_solution(data):
     """
     name = data.get('name')
     solution = data.get('solution')
+    instance = data.get('instance')
 
     return dict(
         name=name,
+        penalty=instance.get('deviation_penalty'),
+        allowed_deviation=instance.get('allowed_deviation'),
         distance=solution.get('distance'),
         solution_value=solution.get('value'),
         number_of_vehicles=len(solution.get('routes')),

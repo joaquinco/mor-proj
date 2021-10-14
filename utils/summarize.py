@@ -27,7 +27,7 @@ def get_max_wait_time(solution):
     """
     Return maximun wait time of all route entries.
     """
-    return max(*[
+    return max([
         max(*[c.get('wait_time') for c in route.get('clients')])
         for route in solution.get('routes')
     ])

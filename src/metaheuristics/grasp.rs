@@ -126,12 +126,12 @@ impl Grasp {
       .map(|index| index.to_owned())
       .collect();
 
-    let weight_config: GraspWeightConfig = weighted_choose(
-      &self.config.weight_configs,
-      self.config.weight_configs.iter().map(|c| c.config_weight).collect(),
-    ).unwrap().clone();
-
     while !all_clients.is_empty() {
+      let weight_config: &GraspWeightConfig = weighted_choose(
+        &self.config.weight_configs,
+        self.config.weight_configs.iter().map(|c| c.config_weight).collect(),
+      ).unwrap();
+
       let mut moves = self.get_possible_moves(&vehicle_routes, &all_clients, &problem, &weight_config);
 
       moves.sort_by(|m1, m2| m1.cost.partial_cmp(&m2.cost).unwrap());
@@ -152,7 +152,7 @@ impl Grasp {
       };
     }
 
-    let mut sol: Solution = Solution { weight_config_name: weight_config.display_name, ..Default::default() };
+    let mut sol: Solution = Solution { weight_config_name: "Deprecated".to_string(), ..Default::default() };
 
     for vehicle in problem.vehicles.iter() {
       let vroute = vehicle_routes.get_mut(&vehicle.id).unwrap();
@@ -280,7 +280,7 @@ impl Grasp {
   fn compute_move_cost(
     &self,
     problem: &ProblemInstance,
-    weights: &GraspWeightConfig, 
+    weights: &GraspWeightConfig,
     vroute: &GraspRoute,
     client_to: usize,
     arrival_time: Time,

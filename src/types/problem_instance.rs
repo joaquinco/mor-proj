@@ -173,11 +173,17 @@ impl fmt::Display for ProblemInstance {
       f,
       "  name: {}
   vehicles: {}
+  first vehicle capacity: {}
   nodes: {}
   allowed excess: {}
   penalty: {}",
       self.name,
       self.vehicles.len(),
+      if self.vehicles.len() > 0 {
+        self.vehicles.first().unwrap().capacity.to_string()
+      } else {
+        "-".to_string()
+      },
       self.clients.len(),
       self.allowed_deviation,
       self.deviation_penalty,

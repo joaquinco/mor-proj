@@ -152,7 +152,7 @@ impl Grasp {
       };
     }
 
-    let mut sol: Solution = Solution { weight_config_name: "Deprecated".to_string(), ..Default::default() };
+    let mut sol: Solution = Solution { weight_config_name: "mixed".to_string(), ..Default::default() };
 
     for vehicle in problem.vehicles.iter() {
       let vroute = vehicle_routes.get_mut(&vehicle.id).unwrap();
@@ -288,7 +288,7 @@ impl Grasp {
   ) -> f64 {
     let vehicle = &problem.vehicles[vroute.vehicle_id];
     let fixed_cost = if problem.source == vroute.current_client_id {
-                      20.0 * vehicle.fixed_cost
+                      self.config.new_vehicle_penalty_weight * vehicle.fixed_cost
                     } else {
                       0 as Cost
                     };
